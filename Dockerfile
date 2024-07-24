@@ -15,16 +15,21 @@ RUN npm install
 COPY . .
 
 # Build the application.
-RUN npm run build
+# RUN npm run build
+RUN npm install
 
-# Use a lightweight web server to serve the static files.
-FROM nginx:alpine
+COPY . .
 
-# Copy the build files from the previous stage.
-COPY --from=build /app/build /usr/share/nginx/html
+ENV PORT=8080
+
+# # Use a lightweight web server to serve the static files.
+# FROM nginx:alpine
+
+# # Copy the build files from the previous stage.
+# COPY --from=build /app/build /usr/share/nginx/html
 
 # Expose port 80 for the web server.
-EXPOSE 80
+EXPOSE 8080
 
 # Start the Nginx server.
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]
