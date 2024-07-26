@@ -1,35 +1,32 @@
-# client/Dockerfile
+# Use an official Node.js runtime as a parent image
+FROM node:16-alpine
 
-# Use the official Node.js image.
-FROM node:18 AS build
-
-# Set the working directory.
+# Set the working directory
 WORKDIR /app
 
-# Install dependencies.
-COPY package.json ./
-COPY package-lock.json ./
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the source code.
+# Copy the rest of the application code to the working directory
 COPY . .
 
-# Build the application.
-# RUN npm run build
-RUN npm install
+# Build the React app for production
+RUN npm run build
 
-COPY . .
+# Use a lightweight web server to serve the static files
+FROM nginx:alpine
 
-ENV PORT=8080
+# Copy custom Nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# # Use a lightweight web server to serve the static files.
-# FROM nginx:alpine
+# Copy the build output to the Nginx html directory
+COPY --from=0 /app/dist /usr/share/nginx/html
 
-# # Copy the build files from the previous stage.
-# COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80 for the web server.
+# Expose port 80
 EXPOSE 8080
 
-# Start the Nginx server.
-CMD ["npm", "start"]
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
