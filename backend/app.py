@@ -1,18 +1,3 @@
-# from flask import Flask, jsonify
-# from flask_cors import CORS
-
-# app = Flask(__name__)
-
-# # Enable CORS with specific settings
-# CORS(app, resources={r"/api/*": {"origins": "*"}})  # Allow all origins for /api/* endpoints
-
-# @app.route('/api/data', methods=['GET'])
-# def get_data():
-#     return jsonify({"message": "Hello from Flask!"})
-
-# if __name__ == '__main__':
-#     app.run(port=5000)
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 
