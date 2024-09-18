@@ -1,38 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import {Week} from "./Week"
-import {Today} from "./Today"
-import {Info} from "./Info"
-import "./style.css"
+import React, { useEffect, useState } from "react";
+import { Week } from "./Week";
+import { Today } from "./Today";
+import { Info } from "./Info";
+import { Task } from "./components/Task";
+// import "./style.css";
+import api from "./api";
 
 function App() {
-  const [data, setData] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [content, setContent] = useState("");
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/api/data')
-      .then(response => {
-        setData(response.data);
+    getTasks();
+  });
+
+  const getTasks = () => {
+    api
+      .get("./api/tasks/")
+      .then((res) => res.data)
+      .then((data) => {
+        setTasks(data);
+        console.log(data);
       })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
+      .catch((err) => alert(err));
+  };
+
+  const deleteTask = (id) => {
+    api.delete(`/api/task/delete/${id}`).then((res) => {
+      if (res.status === 204) alert("The Task was deleted");
+      else alert("failed to delete note.");
+      getTasks();
+    });
+  };
+
+  const createTask = (e) => {
+    e.preventDefault();
+    api
+      .post("/api/tasks/", { content })
+      .then((res) => {
+        if (res.status === 201) alert("Task created!");
+        else alert("Failed to make Task.");
+        getTasks();
+      })
+      .catch((err) => alert(err));
+  };
 
   return (
-    <>
-      <main>      
-        <div className="grid-container">
-        <Week className="week grid-item"/>
-        <Today className="today grid-item"/>
-        <Info className="info grid-item"/>
-      </div>
-      </main>
+    <main>
+      <h2>Tasks</h2>
+      {tasks.map((task) => {
+        <Task task={task} onDelete={onDelete} key={task.id} />;
+      })}
 
-
-      {/* <h1>Data from Flask (backend):</h1>
-      {data && <pre>{JSON.stringify(data, null, 2)}</pre>} */}
-    </>
+      <h2>Create task</h2>
+      <form onSubmit={createTask}>
+        <label htmlFor="title">Content</label>
+        <br/>
+        <input type="text" id="content" content="content"/>
+        <input type="submit" value="Submit"></input>
+      </form>
+     
+    </main>
   );
 }
 
 export default App;
+
+// {/* <main>
+//   <div className="grid-container">
+//   <Week className="week grid-item"/>
+//   <Today className="today grid-item"/>
+//   <Info className="info grid-item"/>
+// </div>
+// </main> */}
