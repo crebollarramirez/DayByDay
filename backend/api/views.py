@@ -4,6 +4,8 @@ from rest_framework import generics
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Task
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class TaskListCreate(generics.ListCreateAPIView):
@@ -27,4 +29,14 @@ class TaskDelete(generics.DestroyAPIView):
 
     def get_queryset(self):
         return Task.objects.all()
+    
+# class DeleteAllTasks(generics.DestroyAPIView):
+#     queryset = Task.objects.all()
+#     serializer_class = TaskSerializer
+#     permission_classes = [AllowAny]
+
+#     def delete(self, request, *args, **kwargs):
+#         # Delete all tasks
+#         self.queryset.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
