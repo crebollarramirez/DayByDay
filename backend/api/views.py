@@ -6,11 +6,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Task
 
 
-class NoteListCreate(generics.ListCreateAPIView):
+class TaskListCreate(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Task.objects
+        return Task.objects.all()
 
     def perform_create(self, serializer):
         if serializer.is_valid():
@@ -19,12 +20,11 @@ class NoteListCreate(generics.ListCreateAPIView):
             print(serializer.errors)
 
 
-class NoteDelete(generics.DestroyAPIView):
+class TaskDelete(generics.DestroyAPIView):
+    queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Task.objects
+        return Task.objects.all()
 
-
-class CreateNoteView(generics.CreateAPIView):
-    queryset = Task.objects.all()

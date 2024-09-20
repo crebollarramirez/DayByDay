@@ -9,10 +9,11 @@ import api from "./api";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [content, setContent] = useState("");
+  const [title, setTitle] = useState("");
 
   useEffect(() => {
     getTasks();
-  });
+  }, []);
 
   const getTasks = () => {
     api
@@ -26,7 +27,7 @@ function App() {
   };
 
   const deleteTask = (id) => {
-    api.delete(`/api/task/delete/${id}`).then((res) => {
+    api.delete(`/api/tasks/delete/${id}/`).then((res) => {
       if (res.status === 204) alert("The Task was deleted");
       else alert("failed to delete note.");
       getTasks();
@@ -36,30 +37,39 @@ function App() {
   const createTask = (e) => {
     e.preventDefault();
     api
-      .post("/api/tasks/", { content })
+      .post("/api/tasks/", { content, title })
       .then((res) => {
         if (res.status === 201) alert("Task created!");
         else alert("Failed to make Task.");
         getTasks();
       })
-      .catch((err) => alert(err));
+      .catch((err) => alert(err)); // we are getting this error when submitting task, maybe backend issue
   };
 
   return (
     <main>
       <h2>Tasks</h2>
-      {tasks.map((task) => {
-        <Task task={task} onDelete={onDelete} key={task.id} />;
-      })}
+      {tasks.map((task) => (
+        <Task task={task} onDelete={deleteTask} key={task.id} />
+      ))} 
 
       <h2>Create task</h2>
       <form onSubmit={createTask}>
         <label htmlFor="title">Content</label>
-        <br/>
-        <input type="text" id="content" content="content"/>
+        <br />
+        <textarea
+          id="content"
+          name="content"
+          required
+          value={content}
+          onChange={(e) => {
+            setContent(e.target.value);
+            setTitle(e.target.value);
+          }}
+        ></textarea>
+        <br />
         <input type="submit" value="Submit"></input>
       </form>
-     
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import react, {useState} from "react"
 
 
-function NewNoteForm(){
+function NewTaskForm(){
     const [content, setContent] = useState("")
 
     const handleSubmit = async (e) => {
