@@ -1,13 +1,10 @@
-from django.db import models
+class Todo:
+    def __init__(self, content, status):
+        self.content = content
+        # self.status = status
 
-# Create your models here.
-class Task(models.Model):
-    content = models.TextField()
-    title = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    done = False
-
-    def __str__(self):
-        return self.content
-    
-# class DailyTask(models.Model):
+# class FrequentTask:
+#     def __init__(self, title, content, frequency) -> None:
+#         self.title = title
+#         self.content = content
+#         self.frquency = frequency

@@ -12,7 +12,7 @@ function App() {
 
   const getTasks = () => {
     api
-      .get("./api/tasks/")
+      .get("./api/todos/list/")
       .then((res) => res.data)
       .then((data) => {
         setTasks(data);

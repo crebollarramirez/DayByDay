@@ -3,12 +3,11 @@ import api from "../api";
 
 export function CreateTaskBlock({getTasks}) {
   const [content, setContent] = useState("");
-  const [title, setTitle] = useState("");
 
   const createTask = (e) => {
     e.preventDefault();
     api
-      .post("/api/tasks/", { content, title })
+      .post("/api/todos/", { content })
       .then((res) => {
         if (res.status === 201) {
           alert("Task created!");
@@ -33,7 +32,6 @@ export function CreateTaskBlock({getTasks}) {
           value={content}
           onChange={(e) => {
             setContent(e.target.value);
-            setTitle(e.target.value);
           }}
         ></textarea>
         <br />

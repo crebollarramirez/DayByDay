@@ -5,7 +5,7 @@ import { Task } from "./Task";
 export function TasksBox({getTasks, tasks}) {
 
   const deleteTask = (id) => {
-    api.delete(`/api/tasks/delete/${id}/`).then((res) => {
+    api.delete(`/api/todos/delete/${id}/`).then((res) => {
       if (res.status === 204) alert("The Task was deleted");
       else alert("failed to delete note.");
       getTasks();
@@ -16,7 +16,7 @@ export function TasksBox({getTasks, tasks}) {
     <div className="tasks-container">
       <h2>Tasks</h2>
       {tasks.map((task) => (
-        <Task task={task} onDelete={deleteTask} key={task.id} />
+        <Task task={task} onDelete={deleteTask} key={task.content} />
       ))}
     </div>
   );

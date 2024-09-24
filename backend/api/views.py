@@ -1,42 +1,47 @@
-from django.shortcuts import render
-from django.contrib.auth.models import User
-from rest_framework import generics
-from .serializers import TaskSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Task
-from rest_framework.response import Response
-from rest_framework import status
+from django.http import JsonResponse
+from .dynamodb import get_tasks_table
+from django.views.decorators.csrf import csrf_exempt
+import json
 
+@csrf_exempt
+def create_task(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        content = data.get('content')
+        print(data)
+        table = get_tasks_table()
+        response = table.put_item(
+            Item={
+                'content': content
+            }
+        )
 
-class TaskListCreate(generics.ListCreateAPIView):
-    serializer_class = TaskSerializer
-    permission_classes = [AllowAny]
+        return JsonResponse({'message': 'Task created', 'data': data}, status=201)
 
-    def get_queryset(self):
-        return Task.objects.all()
-
-    def perform_create(self, serializer):
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            print(serializer.errors)
-
-
-class TaskDelete(generics.DestroyAPIView):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Task.objects.all()
+def list_tasks(request):
+    if request.method == 'GET':
+        table = get_tasks_table()
+        response = table.scan()
+        print(response['Items'])
+        return JsonResponse(response['Items'], safe=False)
     
-# class DeleteAllTasks(generics.DestroyAPIView):
-#     queryset = Task.objects.all()
-#     serializer_class = TaskSerializer
-#     permission_classes = [AllowAny]
-
-#     def delete(self, request, *args, **kwargs):
-#         # Delete all tasks
-#         self.queryset.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+@csrf_exempt
+def clear_tasks(request):
+    if request.method == 'DELETE':  # Use DELETE method for clearing tasks
+        table = get_tasks_table()
+        
+        # Scan the table to get all items
+        response = table.scan()
+        items = response['Items']
+        
+        # Loop through the items and delete each one
+        for item in items:
+            # Assuming 'taskId' is the primary key of the items
+            table.delete_item(
+                Key={
+                    'content': item['content']  # Replace 'taskId' with your actual primary key name
+                }
+            )
+        
+        return JsonResponse({'message': 'All tasks have been deleted.'}, status=204)
 
