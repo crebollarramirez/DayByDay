@@ -18,11 +18,26 @@ def create_task(request):
 
         return JsonResponse({'message': 'Task created', 'data': data}, status=201)
 
+@csrf_exempt
+def delete_task(request, content):
+    if request.method == 'DELETE':
+        table = get_tasks_table()
+        print("we are deleting")
+        print(f"content: {content}".format(content))
+        # Delete the task from the table by its taskId
+        table.delete_item(
+            Key={
+                'content': content
+            }
+        )
+        
+        return JsonResponse({'message': 'Task deleted successfully.'}, status=204)
+
+
 def list_tasks(request):
     if request.method == 'GET':
         table = get_tasks_table()
         response = table.scan()
-        print(response['Items'])
         return JsonResponse(response['Items'], safe=False)
     
 @csrf_exempt

@@ -23,7 +23,7 @@ function App() {
 
   return (
     <main>
-      <TasksBox getTasks={getTasks} tasks={tasks} />
+      <TasksBox setTasks={setTasks} getTasks={getTasks} tasks={tasks} />
       <CreateTaskBlock getTasks={getTasks} />
     </main>
   );

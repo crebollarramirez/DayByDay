@@ -7,7 +7,7 @@ export function CreateTaskBlock({getTasks}) {
   const createTask = (e) => {
     e.preventDefault();
     api
-      .post("/api/todos/", { content })
+      .post("/api/todos/", {content})
       .then((res) => {
         if (res.status === 201) {
           alert("Task created!");

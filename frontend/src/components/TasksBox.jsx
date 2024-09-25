@@ -4,13 +4,22 @@ import { Task } from "./Task";
 
 export function TasksBox({getTasks, tasks}) {
 
-  const deleteTask = (id) => {
-    api.delete(`/api/todos/delete/${id}/`).then((res) => {
-      if (res.status === 204) alert("The Task was deleted");
-      else alert("failed to delete note.");
-      getTasks();
-    });
-  };
+  // Function to delete a task
+  const deleteTask = async (taskId) => {
+    try {
+        const response = await api.delete(`api/todos/${encodeURIComponent(taskId)}/`);
+
+        if (response.status === 204) {
+            console.log('Task deleted successfully');
+            // Optionally refresh tasks or update state here
+        } else {
+            console.error('Failed to delete the task');
+        }
+    } catch (error) {
+        console.error('Failed to delete the task', error);
+    }
+    getTasks();
+};
 
   return (
     <div className="tasks-container">
