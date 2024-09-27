@@ -7,24 +7,6 @@ from enum import Enum
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 
-
-class Weekday(Enum):
-    MONDAY = 1
-    TUESDAY = 2
-    WEDNESDAY = 3
-    THURSDAY = 4
-    FRIDAY = 5
-    SATURDAY = 6
-    SUNDAY = 7
-
-
-class Item_Type(Enum):
-    TODO = "TODO"
-    FREQUENT = "FREQUENT"
-    TASK = "TASK"
-    GOAL = "GOAL"
-
-
 class ScheduleManager:
 
     # Private Class Member Variables
@@ -39,18 +21,14 @@ class ScheduleManager:
     __today = {}
     __week = {}
 
-    def __get_dynamodb_resource():
-        return boto3.resource(
+    @classmethod
+    def __set_table(cls):
+        cls.__table = boto3.resource(
             "dynamodb",
             region_name=settings.AWS_REGION_NAME,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
-
-    @classmethod
-    def __set_table(cls):
-        dynamodb = cls.__get_dynamodb_resource()
-        cls.__table = dynamodb.Table(settings.AWS_DYNAMODB_TABLE_NAME)
+        ).Table(settings.AWS_DYNAMODB_TABLE_NAME)
 
     # this works well
     @classmethod
@@ -162,4 +140,4 @@ class ScheduleManager:
                 )
 
                 cls.__todos[title].content = newData
-            return JsonResponse({'message': 'Todo updated successfully', 'updated': response['Attributes']}, status=200)
+            return JsonResponse({'message': 'Todo updated successfully', 'updated': response['Attributes']}, status=204)
