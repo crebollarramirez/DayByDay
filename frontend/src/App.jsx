@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { TasksBox } from "./components/TasksBox";
+import { TodosBox } from "./components/TodosBox";
 import api from "./api";
-import { CreateTaskBlock } from "./components/CreateTaskBlock";
+import { CreateTodoBlock } from "./components/CreateTodoBlock";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    getTasks();
+    getTodos();
   }, []);
 
-  const getTasks = () => {
+  const getTodos = () => {
     api
       .get("./api/todos/list/")
       .then((res) => res.data)
       .then((data) => {
-        setTasks(data);
-        console.log(data);
+        setTodos(data);
+        console.log(data)
       })
       .catch((err) => alert(err));
   };
 
   return (
     <main>
-      <TasksBox setTasks={setTasks} getTasks={getTasks} tasks={tasks} />
-      <CreateTaskBlock getTasks={getTasks} />
+      <TodosBox getTodos={getTodos} todos={todos} />
+      <CreateTodoBlock getTodos={getTodos} />
     </main>
   );
 }

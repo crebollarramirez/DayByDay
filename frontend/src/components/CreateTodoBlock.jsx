@@ -1,28 +1,35 @@
 import React, { useState} from "react";
 import api from "../api";
 
-export function CreateTaskBlock({getTasks}) {
+export function CreateTodoBlock({getTodos}) {
   const [content, setContent] = useState("");
 
-  const createTask = (e) => {
+  const createTodo = (e) => {
+    const toDoInfo = {
+      title: content,
+      content: content,
+      item_type: "TODO",
+      completed: false
+    }
+    
     e.preventDefault();
     api
-      .post("/api/todos/", {content})
+      .post('/api/todos/', toDoInfo)
       .then((res) => {
         if (res.status === 201) {
-          alert("Task created!");
-          getTasks(); // Call getTasks here to update the task list
+          alert("Todo created!");
+          getTodos(); // Call getTasks here to update the task list
         } else {
-          alert("Failed to make Task.");
+          alert("Failed to make Todo.");
         }
       })
       .catch((err) => alert(err));
   };
 
   return (
-    <div className="createTask-container">
-      <h2>Create task</h2>
-      <form onSubmit={createTask}>
+    <div className="createTodo-container">
+      <h2>Create Todo</h2>
+      <form onSubmit={createTodo}>
         <label htmlFor="title">Content</label>
         <br />
         <textarea

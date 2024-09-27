@@ -1,17 +1,20 @@
 from django.http import JsonResponse
-from .dynamodb import get_tasks_table
+from boto3.dynamodb.conditions import Attr
 from django.views.decorators.csrf import csrf_exempt
 import json
 
 @csrf_exempt
-def create_task(request):
+def create_todo(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         content = data.get('content')
+
         print(data)
         table = get_tasks_table()
         response = table.put_item(
             Item={
+                'item_type': "TODO",
+                'title': content,
                 'content': content
             }
         )
@@ -19,44 +22,55 @@ def create_task(request):
         return JsonResponse({'message': 'Task created', 'data': data}, status=201)
 
 @csrf_exempt
-def delete_task(request, content):
+def delete_todo(request, title, item_type):
     if request.method == 'DELETE':
         table = get_tasks_table()
         print("we are deleting")
-        print(f"content: {content}".format(content))
+        print(f"content: {title}".format(title))
         # Delete the task from the table by its taskId
+        print(title + '\n\n\n')
         table.delete_item(
             Key={
-                'content': content
+                'title': title,
+                'item_type': item_type
             }
         )
         
         return JsonResponse({'message': 'Task deleted successfully.'}, status=204)
 
 
-def list_tasks(request):
+def list_todo(request):
     if request.method == 'GET':
         table = get_tasks_table()
-        response = table.scan()
+        
+        # Scan the table and filter for items with item_type = 'todo'
+        response = table.scan(
+            FilterExpression=Attr('item_type').eq('TODO')
+        )
+        
         return JsonResponse(response['Items'], safe=False)
     
 @csrf_exempt
-def clear_tasks(request):
-    if request.method == 'DELETE':  # Use DELETE method for clearing tasks
+def edit_todo(request, title):
+    if request.method == 'PUT':
         table = get_tasks_table()
-        
-        # Scan the table to get all items
-        response = table.scan()
-        items = response['Items']
-        
-        # Loop through the items and delete each one
-        for item in items:
-            # Assuming 'taskId' is the primary key of the items
-            table.delete_item(
-                Key={
-                    'content': item['content']  # Replace 'taskId' with your actual primary key name
-                }
-            )
-        
-        return JsonResponse({'message': 'All tasks have been deleted.'}, status=204)
 
+        data = json.loads(request.body)
+        newData = data.get('newData')
+        print(newData)
+
+        response = table.update_item(
+        Key={
+            'title': title,
+
+        },
+        UpdateExpression = "set content = :c",
+        ExpressionAttributeValues={
+            ':c' : newData
+        },
+        ReturnValues="UPDATED_NEW"
+        )
+       
+        return JsonResponse({'message': 'Task updated successfully', 'updated': response['Attributes']}, status=200)
+   
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
