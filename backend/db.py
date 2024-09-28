@@ -100,19 +100,62 @@ def show():
             print(item)
             print()
 
-# parser = argparse.ArgumentParser(description="DB Help")
-# parser.add_argument("--e", type=str, help="Refresh Databases")
-# parser.add_argument("--s", type=str, help="Show all database information")
+def addDummyData():
+    Item1 = {
+        "item_type": "FREQUENT",
+        "title": "Morning Walk",
+        "content": "Take the dog for a morning walk.",
+        "frequency": "MONDAY",
+        "completed": False,
+        "timeFrame": ("7:00AM", "8:00AM")
+    }
 
-# args = parser.parse_args()
+    Item2 = {
+        "item_type": "FREQUENT",
+        "title": "Grocery Shopping",
+        "content": "Buy groceries for the week.",
+        "frequency": "TUESDAY",
+        "completed": False,
+        "timeFrame": ("10:00AM", "11:00AM")
+    }
 
-# if args.e is not None:
-#     if args.e == "d":
-#         delete_table()
-#     if args.e == "s":
-#         show()
+    Item3 = {
+        "item_type": "FREQUENT",
+        "title": "Weekly Meeting",
+        "content": "Attend the project weekly meeting.",
+        "frequency": "WEDNESDAY",
+        "completed": False,
+        "timeFrame": ("2:00PM", "3:00PM")
+    }
 
-show()
+    Item4 = {
+        "item_type": "FREQUENT",
+        "title": "Gym Session",
+        "content": "Workout at the gym after work.",
+        "frequency": "THURSDAY",
+        "completed": False,
+        "timeFrame": ("5:00PM", "6:30PM")
+    }
+
+    SampleTodo = {
+        "item_type": "TODO",
+        "title": "eat food",
+        "content": "eat food",
+        "completed": False,
+    }
+
+    table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
+    table.put_item(Item=Item1)
+    table.put_item(Item=Item2)
+    table.put_item(Item=Item3)
+    table.put_item(Item=Item4)
+    table.put_item(Item=SampleTodo)
+
+# delete_table()
+# create_dynamodb_table()
+addDummyData()
+
+
 
 
 

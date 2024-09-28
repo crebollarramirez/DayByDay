@@ -1,9 +1,12 @@
-import React from 'react';
+import React from "react";
 
-export function Week({className}){
-    return(
-            <div className={className}>
-                <h1>Week</h1>
-            </div>
-    )
+export function Week() {
+  return (
+    <div className="week-container">
+      <h1>Week</h1>
+      {/* {week.map((day) => (
+        <Day day={day} key={day.title} />
+      ))} */}
+    </div>
+  );
 }

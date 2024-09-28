@@ -1,7 +1,7 @@
 """
-frequency: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+frequency: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 
-EVERYDAY, 2WEEKS, MONTHLY, YEARLY
+EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
 """
 
 # For todo list 
@@ -24,6 +24,10 @@ class Todo:
             'completed': self.completed,
             'item_type': self.getItemType()  # Include item type if needed
         }
+    
+    def setCompleted(self, stat: bool):
+        self.completed = stat
+
 
 class FrequentTask:
     ITEM_TYPE = 'FREQUENT'

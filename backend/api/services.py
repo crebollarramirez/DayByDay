@@ -7,13 +7,26 @@ from enum import Enum
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 
+
 class ScheduleManager:
 
     # Private Class Member Variables
     __table = None
 
     __todos = {}
-    __frquencyTasks = {}
+    __frequentTasks = {
+        "MONDAY": {},
+        "TUESDAY": {},
+        "WEDNESDAY": {},
+        "THURSDAY": {},
+        "FRIDAY": {},
+        "SATURDAY": {},
+        "SUNDAY": {},
+        "EVERYDAY": {},
+        "BIWEEKLY": {},
+        "MONTHLY": {},
+        "YEARLY": {},
+    }
     __tasks = {}
     __goals = {}
 
@@ -48,20 +61,83 @@ class ScheduleManager:
                         completed=item.get("completed", False),
                     )
 
-                # elif item_type == "FREQUENT":
-                #     cls.__frquencyTasks[item['title']] = FrequentTask(
+                elif item_type == "FREQUENT":
+                    # will be organized in {Day of Week} -> Bucket {title}
+                    fTask = FrequentTask(
+                        title=item["title"],
+                        content=item["content"],
+                        frequency=item["frequency"],
+                        completed=item.get("completed", False),
+                        timeFrame=item.get("timeFrame"),
+                    )
+
+                    cls.__frequentTasks[item["frequency"]][item["title"]] = fTask
+
+                elif item_type == "TASK":
+                    cls.__tasks[item["title"]] = Task(
+                        title=item["title"],
+                        content=item["content"],
+                        completed=item.get("completed", False),
+                        timeFrame=item.get("timeFrame"),
+                        date=item.get("date"),
+                    )
+                # elif item_type == "GOAL":
+                #     cls.__frquencyTasks[item['title']] = Goal(
                 #         title = item['title'],
                 #         content = item['content'],
-                #         frequency= item['frequency'],
                 #         completed=item.get('completed', False),
-                #         timeFrame= item.get('timeFrame')
+                #         taskMap = item.get('tasksMap', {})
                 #     )
         except Exception as e:
             print(f"Error with fetching data: {e}")
 
     @classmethod
-    def setUpWeek(cls) -> dict:
-        cls.week
+    def setUpWeek(cls) -> None:
+        # Simple monday tuesday wednesday
+        cls.__week["MONDAY"] = cls.__frequentTasks["MONDAY"]
+        cls.__week["TUESDAY"] = cls.__frequentTasks["TUESDAY"]
+        cls.__week["WEDNESDAY"] = cls.__frequentTasks["WEDNESDAY"]
+        cls.__week["THURSDAY"] = cls.__frequentTasks["THURSDAY"]
+
+    @classmethod
+    def getWeek(cls, request) -> JsonResponse:
+        print(cls.__week)
+        if request.method == "GET":
+
+            # this is just to test the data
+            test = {
+                "MONDAY": {
+                    "task1": {
+                        "item_type": "FREQUENT",
+                        "title": "Morning Walk",
+                        "content": "Take the dog for a morning walk.",
+                        "frequency": "MONDAY",
+                        "completed": False,
+                        "timeFrame": ("7:00AM", "8:00AM"),
+                    },
+                },
+                "TUESDAY": {
+                    "task1": {
+                        "item_type": "FREQUENT",
+                        "title": "Grocery Shopping",
+                        "content": "Buy groceries for the week.",
+                        "frequency": "TUESDAY",
+                        "completed": False,
+                        "timeFrame": ("10:00AM", "11:00AM"),
+                    },
+                },
+                "WEDNESDAY": {
+                    "task1": {
+                        "item_type": "FREQUENT",
+                        "title": "Weekly Meeting",
+                        "content": "Attend the project weekly meeting.",
+                        "frequency": "WEDNESDAY",
+                        "completed": False,
+                        "timeFrame": ("2:00PM", "3:00PM"),
+                    }
+                },
+            }
+            return JsonResponse(test)
 
     @classmethod
     def getToday(cls) -> dict:
@@ -72,7 +148,8 @@ class ScheduleManager:
         pass
 
     @classmethod
-    def getTodos(cls, request):
+    def getTodos(cls, request) -> JsonResponse:
+        cls.setUpWeek()
         if request.method == "GET":
             # Create a list of dictionaries for each Todo object
             todos_dict_list = [
@@ -84,15 +161,15 @@ class ScheduleManager:
 
     @classmethod
     @csrf_exempt
-    def create(cls, request):
+    def create(cls, request) -> JsonResponse:
         if request.method == "POST":
             data = json.loads(request.body)
             item_type = data.get("item_type")
-            title = data.get("title")
-            content = data.get("content")
-            completed = data.get("completed")
 
             if item_type == "TODO":
+                title = data.get("title")
+                content = data.get("content")
+                completed = data.get("completed")
                 if title in cls.__todos:
                     return JsonResponse(
                         {"error": "Todo item with this title already exists"},
@@ -111,11 +188,74 @@ class ScheduleManager:
                         "completed": completed,
                     }
                 )
-            return JsonResponse({"message": "Task created", "data": data}, status=201)
+            elif item_type == "FREQUENT":
+                title = data.get("title")
+                content = data.get("content")
+                frequency = data.get("frequency")
+                completed = data.get("completed")
+                timeFrame = data.get("timeFrame")
+                if title in cls.__frequentTasks:
+                    return JsonResponse(
+                        {"error": "Frequent Task with this title already exists"},
+                        status=400,
+                    )
+
+                cls.__frequentTasks[title] = FrequentTask(
+                    title=title,
+                    content=content,
+                    frequency=frequency,
+                    completed=completed,
+                    timeFrame=timeFrame,
+                )
+
+                response = cls.__table.put_item(
+                    Item={
+                        "item_type": "FREQUENT",
+                        "title": title,
+                        "content": content,
+                        "frequency": frequency,
+                        "completed": completed,
+                        "timeFrame": timeFrame,
+                    }
+                )
+
+            if item_type == "TASK":
+                title = data.get("title")
+                content = data.get("content")
+                completed = data.get("completed")
+                timeFrame = data.get("timeFrame")
+                date = data.get("date")
+
+                if title in cls.__tasks:
+                    return JsonResponse(
+                        {"error": "Task already exists"},
+                        status=400,
+                    )
+
+                cls.__tasks[title] = Task(
+                    title=title,
+                    content=content,
+                    completed=completed,
+                    timeFrame=timeFrame,
+                    date=date,
+                )
+
+                response = cls.__table.put_item(
+                    Item={
+                        "item_type": "FREQUENT",
+                        "title": title,
+                        "content": content,
+                        "frequency": frequency,
+                        "completed": completed,
+                        "timeFrame": timeFrame,
+                    }
+                )
+
+            return JsonResponse({"message": "Task Created", "data": data}, status=201)
 
     @classmethod
     @csrf_exempt
-    def delete(cls, request, title, item_type):
+    def delete(cls, request, title, item_type) -> JsonResponse:
         if request.method == "DELETE":
             if item_type == "TODO" and title in cls.__todos:
                 cls.__table.delete_item(Key={"title": title, "item_type": item_type})
@@ -126,7 +266,7 @@ class ScheduleManager:
 
     @classmethod
     @csrf_exempt
-    def update(cls, request, title, item_type):
+    def update(cls, request, title, item_type) -> JsonResponse:
         if request.method == "PUT":
             if item_type == "TODO":
                 data = json.loads(request.body)
@@ -136,8 +276,14 @@ class ScheduleManager:
                     Key={"title": title, "item_type": item_type},
                     UpdateExpression="set content = :c",
                     ExpressionAttributeValues={":c": newData},
-                    ReturnValues= "UPDATED_NEW"
+                    ReturnValues="UPDATED_NEW",
                 )
 
                 cls.__todos[title].content = newData
-            return JsonResponse({'message': 'Todo updated successfully', 'updated': response['Attributes']}, status=204)
+            return JsonResponse(
+                {
+                    "message": "Todo updated successfully",
+                    "updated": response["Attributes"],
+                },
+                status=204,
+            )
