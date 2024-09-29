@@ -6,7 +6,10 @@ from django.conf import settings
 from enum import Enum
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
+from datetime import datetime
 
+
+daysOfTheWeek = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
 
 class ScheduleManager:
 
@@ -31,16 +34,38 @@ class ScheduleManager:
     __goals = {}
 
     # For displaying today and the week
-    __today = {}
-    __week = {}
+    __today = ()
+    __week = {
+        "MONDAY": {},
+        "TUESDAY": {},
+        "WEDNESDAY": {},
+        "THURSDAY": {},
+        "FRIDAY": {},
+        "SATURDAY": {},
+        "SUNDAY": {},
+    }
 
     @classmethod
-    def __set_table(cls):
+    def __setTodayDate(cls):
+        today = datetime.now()
+        # Format date as "MM-DD-YYYY" and get weekday
+        cls.__today = (today.strftime("%m-%d-%Y"), today.strftime("%A").upper())
+
+    @classmethod
+    def getTodayDate(cls) -> tuple:
+        cls.__setTodayDate()
+        return cls.__today
+
+
+# modify this later so it returns a value depending if it was able to connect to the database
+    @classmethod
+    def __set_table(cls) -> None:
         cls.__table = boto3.resource(
             "dynamodb",
             region_name=settings.AWS_REGION_NAME,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            endpoint_url="http://localhost:8080",  # For local DynamoDB instance
         ).Table(settings.AWS_DYNAMODB_TABLE_NAME)
 
     # this works well
@@ -93,15 +118,12 @@ class ScheduleManager:
 
     @classmethod
     def setUpWeek(cls) -> None:
-        # Simple monday tuesday wednesday
-        cls.__week["MONDAY"] = cls.__frequentTasks["MONDAY"]
-        cls.__week["TUESDAY"] = cls.__frequentTasks["TUESDAY"]
-        cls.__week["WEDNESDAY"] = cls.__frequentTasks["WEDNESDAY"]
-        cls.__week["THURSDAY"] = cls.__frequentTasks["THURSDAY"]
+        for day in daysOfTheWeek:
+            for title, task in cls.__frequentTasks[day].items():
+                cls.__week[day][title] = task.toDict()
 
     @classmethod
     def getWeek(cls, request) -> JsonResponse:
-        print(cls.__week)
         if request.method == "GET":
 
             # this is just to test the data
@@ -114,6 +136,14 @@ class ScheduleManager:
                         "frequency": "MONDAY",
                         "completed": False,
                         "timeFrame": ("7:00AM", "8:00AM"),
+                    },
+                    "task2": {
+                        "item_type": "FREQUENT",
+                        "title": "Night Stuff",
+                        "content": "go to sleep",
+                        "frequency": "MONDAY",
+                        "completed": False,
+                        "timeFrame": ("10:00PM", "8:00AM"),
                     },
                 },
                 "TUESDAY": {
@@ -136,12 +166,31 @@ class ScheduleManager:
                         "timeFrame": ("2:00PM", "3:00PM"),
                     }
                 },
+                "THURSDAY": {
+                    "task1": {
+                        "item_type": "FREQUENT",
+                        "title": "Weekly Meeting",
+                        "content": "Attend the project weekly meeting.",
+                        "frequency": "WEDNESDAY",
+                        "completed": False,
+                        "timeFrame": ("2:00PM", "3:00PM"),
+                    }
+                },
             }
-            return JsonResponse(test)
+            # cls.__week
+            cls.setUpWeek()
+            return JsonResponse(cls.__week)
 
     @classmethod
-    def getToday(cls) -> dict:
-        return cls.today
+    def getToday(cls, response) -> dict:
+        cls.__setTodayDate()
+        print(cls.__today)
+        print()
+        print(cls.__today[1].upper())
+        print()
+        print(cls.__week[cls.__today[1].upper()])
+        if response.method == 'GET':
+            return JsonResponse(cls.__week[cls.__today[1].upper()])
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -194,6 +243,7 @@ class ScheduleManager:
                 frequency = data.get("frequency")
                 completed = data.get("completed")
                 timeFrame = data.get("timeFrame")
+
                 if title in cls.__frequentTasks:
                     return JsonResponse(
                         {"error": "Frequent Task with this title already exists"},
@@ -219,7 +269,7 @@ class ScheduleManager:
                     }
                 )
 
-            if item_type == "TASK":
+            elif item_type == "TASK":
                 title = data.get("title")
                 content = data.get("content")
                 completed = data.get("completed")

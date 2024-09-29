@@ -30,7 +30,9 @@ class Todo:
 
 
 class FrequentTask:
-    ITEM_TYPE = 'FREQUENT'
+    __ITEM_TYPE = 'FREQUENT'
+
+
 
     def __init__(self, title, content, frequency, completed, timeFrame) -> None:
         self.title: str = title
@@ -39,11 +41,22 @@ class FrequentTask:
         self.completed: bool = completed
         self.timeFrame: tuple = timeFrame
 
-    def to_dict(self) -> dict:
-        pass
+    def getItemType(self) -> str:
+        return self.__ITEM_TYPE
+
+    def toDict(self) -> dict:
+        # Convert the object to a dictionary
+        return {
+            'title': self.title,
+            'content': self.content,
+            'frequency': self.frequency,
+            'completed': self.completed,
+            'item_type': self.getItemType(),  # Include item type if needed
+            'timeFrame': self.timeFrame
+        }
 
 class Task:
-    ITEM_TYPE = "TASK"
+    __ITEM_TYPE = "TASK"
 
     def __init__(self, title, content, completed, timeFrame, date) -> None:
         self.title: str = title
@@ -52,8 +65,18 @@ class Task:
         self.timeFrame: tuple = timeFrame
         self.date: str = date
 
-    def to_dict(self) -> dict:
-        pass
+    def getItemType(self) -> str:
+        return self.__ITEM_TYPE
+
+    def toDict(self) -> dict:
+        return {
+            'title': self.title,
+            'content': self.content,
+            'completed': self.completed,
+            'item_type': self.getItemType(),  # Include item type if needed
+            'timeFrame': self.timeFrame,
+            'date': self.date
+        }
 
 class Goal:
     ITEM_TYPE = 'GOAL'
@@ -66,6 +89,17 @@ class Goal:
         self.completedBy: str = completedBy
         self.taskMap: dict = tasksMap
 
-    def to_dict(self) -> dict:
-        pass
+    def getItemType(self) -> str:
+        return self.__ITEM_TYPE
+
+    def toDict(self) -> dict:
+        return {
+            "title": self.title,
+            'content': self.content,
+            'completed': self.completed,
+            'started': self.started,
+            'completedBy': self.completedBy,
+            'taskMap': self.tasksMap,
+            'item_type': self.getItemType()
+        }
 
