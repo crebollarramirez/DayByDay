@@ -15,7 +15,6 @@ class ScheduleManager:
 
     # Private Class Member Variables
     __table = None
-
     __todos = {}
     __frequentTasks = {
         "MONDAY": {},
@@ -35,6 +34,7 @@ class ScheduleManager:
 
     # For displaying today and the week
     __today = ()
+    __todayTasks = {}
     __week = {
         "MONDAY": {},
         "TUESDAY": {},
@@ -45,19 +45,7 @@ class ScheduleManager:
         "SUNDAY": {},
     }
 
-    @classmethod
-    def __setTodayDate(cls):
-        today = datetime.now()
-        # Format date as "MM-DD-YYYY" and get weekday
-        cls.__today = (today.strftime("%m-%d-%Y"), today.strftime("%A").upper())
-
-    @classmethod
-    def getTodayDate(cls) -> tuple:
-        cls.__setTodayDate()
-        return cls.__today
-
-
-# modify this later so it returns a value depending if it was able to connect to the database
+    # modify this later so it returns a value depending if it was able to connect to the database
     @classmethod
     def __set_table(cls) -> None:
         cls.__table = boto3.resource(
@@ -68,9 +56,36 @@ class ScheduleManager:
             endpoint_url="http://localhost:8080",  # For local DynamoDB instance
         ).Table(settings.AWS_DYNAMODB_TABLE_NAME)
 
+    @classmethod
+    def __setTodayDate(cls):
+        today = datetime.now()
+        # Format date as "MM-DD-YYYY" and get weekday
+        cls.__today = (today.strftime("%m-%d-%Y"), 3)  # today.weekday() % 7)
+
+    @classmethod
+    def __setUpWeek(cls) -> None:
+        # This is what puts all the tasks for the week, including today
+        for day in daysOfTheWeek:
+            for title, task in cls.__frequentTasks[day].items():
+                cls.__week[day][title] = task.toDict()
+
+
+        # Reordering from today
+        reordered_days = (
+            daysOfTheWeek[cls.__today[1] :] + daysOfTheWeek[: cls.__today[1]]
+        )
+
+        cls.__week = {key: cls.__week[key] for key in reordered_days}
+
+    @classmethod
+    def getTodayDate(cls) -> tuple:
+        cls.__setTodayDate()
+        return cls.__today
+
     # this works well
     @classmethod
     def getData(cls):
+        cls.__setTodayDate()
         cls.__set_table()
         try:
             response = cls.__table.scan()
@@ -87,17 +102,15 @@ class ScheduleManager:
                     )
 
                 elif item_type == "FREQUENT":
-                    # will be organized in {Day of Week} -> Bucket {title}
-                    fTask = FrequentTask(
-                        title=item["title"],
-                        content=item["content"],
-                        frequency=item["frequency"],
-                        completed=item.get("completed", False),
-                        timeFrame=item.get("timeFrame"),
+                    cls.__frequentTasks[item["frequency"]][item["title"]] = (
+                        FrequentTask(
+                            title=item["title"],
+                            content=item["content"],
+                            frequency=item["frequency"],
+                            completed=item.get("completed", False),
+                            timeFrame=item.get("timeFrame"),
+                        )
                     )
-
-                    cls.__frequentTasks[item["frequency"]][item["title"]] = fTask
-
                 elif item_type == "TASK":
                     cls.__tasks[item["title"]] = Task(
                         title=item["title"],
@@ -106,21 +119,15 @@ class ScheduleManager:
                         timeFrame=item.get("timeFrame"),
                         date=item.get("date"),
                     )
-                # elif item_type == "GOAL":
-                #     cls.__frquencyTasks[item['title']] = Goal(
-                #         title = item['title'],
-                #         content = item['content'],
-                #         completed=item.get('completed', False),
-                #         taskMap = item.get('tasksMap', {})
-                #     )
+                elif item_type == "GOAL":
+                    cls.__frquencyTasks[item["title"]] = Goal(
+                        title=item["title"],
+                        content=item["content"],
+                        completed=item.get("completed", False),
+                        taskMap=item.get("tasksMap", {}),
+                    )
         except Exception as e:
             print(f"Error with fetching data: {e}")
-
-    @classmethod
-    def setUpWeek(cls) -> None:
-        for day in daysOfTheWeek:
-            for title, task in cls.__frequentTasks[day].items():
-                cls.__week[day][title] = task.toDict()
 
     @classmethod
     def getWeek(cls, request) -> JsonResponse:
@@ -177,20 +184,18 @@ class ScheduleManager:
                     }
                 },
             }
-            # cls.__week
-            cls.setUpWeek()
-            return JsonResponse(cls.__week)
+            cls.__setUpWeek()
+
+            # returning week starting after today
+            return JsonResponse(dict(list(cls.__week.items())[1:]))
+
+    # @classmethod
+    # def __setToday(cls) -> None:
 
     @classmethod
-    def getToday(cls, response) -> dict:
-        cls.__setTodayDate()
-        print(cls.__today)
-        print()
-        print(cls.__today[1].upper())
-        print()
-        print(cls.__week[cls.__today[1].upper()])
-        if response.method == 'GET':
-            return JsonResponse(cls.__week[cls.__today[1].upper()])
+    def getToday(cls, response) -> JsonResponse:
+        if response.method == "GET":
+            return JsonResponse(cls.__week[daysOfTheWeek[cls.__today[1]]])
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -198,7 +203,7 @@ class ScheduleManager:
 
     @classmethod
     def getTodos(cls, request) -> JsonResponse:
-        cls.setUpWeek()
+        cls.__setUpWeek()
         if request.method == "GET":
             # Create a list of dictionaries for each Todo object
             todos_dict_list = [
@@ -320,7 +325,6 @@ class ScheduleManager:
         if request.method == "PUT":
             if item_type == "TODO":
                 data = json.loads(request.body)
-                print(data)
                 newData = data.get("newData")
                 response = cls.__table.update_item(
                     Key={"title": title, "item_type": item_type},

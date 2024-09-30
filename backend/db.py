@@ -255,8 +255,8 @@ def addDummyData():
 
 # delete_table()
 # create_dynamodb_table()
-addDummyData()
-# show()
+# addDummyData()
+show()
 
 
 
