@@ -9,7 +9,16 @@ from .models import *
 from datetime import datetime
 
 
-daysOfTheWeek = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+DAYS_OF_THE_WEEK = [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+]
+
 
 class ScheduleManager:
 
@@ -57,7 +66,7 @@ class ScheduleManager:
         ).Table(settings.AWS_DYNAMODB_TABLE_NAME)
 
     @classmethod
-    def __setTodayDate(cls):
+    def __setTodayDate(cls) -> None:
         today = datetime.now()
         # Format date as "MM-DD-YYYY" and get weekday
         cls.__today = (today.strftime("%m-%d-%Y"), 3)  # today.weekday() % 7)
@@ -65,14 +74,13 @@ class ScheduleManager:
     @classmethod
     def __setUpWeek(cls) -> None:
         # This is what puts all the tasks for the week, including today
-        for day in daysOfTheWeek:
+        for day in DAYS_OF_THE_WEEK:
             for title, task in cls.__frequentTasks[day].items():
                 cls.__week[day][title] = task.toDict()
 
-
         # Reordering from today
         reordered_days = (
-            daysOfTheWeek[cls.__today[1] :] + daysOfTheWeek[: cls.__today[1]]
+            DAYS_OF_THE_WEEK[cls.__today[1] :] + DAYS_OF_THE_WEEK[: cls.__today[1]]
         )
 
         cls.__week = {key: cls.__week[key] for key in reordered_days}
@@ -84,7 +92,7 @@ class ScheduleManager:
 
     # this works well
     @classmethod
-    def getData(cls):
+    def getData(cls) -> None:
         cls.__setTodayDate()
         cls.__set_table()
         try:
@@ -195,7 +203,7 @@ class ScheduleManager:
     @classmethod
     def getToday(cls, response) -> JsonResponse:
         if response.method == "GET":
-            return JsonResponse(cls.__week[daysOfTheWeek[cls.__today[1]]])
+            return JsonResponse(cls.__week[DAYS_OF_THE_WEEK[cls.__today[1]]])
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -212,6 +220,10 @@ class ScheduleManager:
             return JsonResponse(
                 todos_dict_list, safe=False
             )  # Return list of dicts as JSON response
+
+    def getGoals(cls, request) -> JsonResponse:
+        if request.method == "GET":
+            pass
 
     @classmethod
     @csrf_exempt
@@ -334,10 +346,33 @@ class ScheduleManager:
                 )
 
                 cls.__todos[title].content = newData
-            return JsonResponse(
-                {
-                    "message": "Todo updated successfully",
-                    "updated": response["Attributes"],
-                },
-                status=204,
-            )
+                return JsonResponse(
+                    {
+                        "message": "Todo updated successfully",
+                        "updated": response["Attributes"],
+                    },
+                    status=204,
+                )
+
+    @classmethod
+    @csrf_exempt
+    def changeStatus(cls, request, title, item_type) -> JsonResponse:
+        if request.method == "PUT":
+            if item_type == "TODO":
+                newStatus = json.loads(request.body)
+                newStatus = newStatus.get('completed')
+                response = cls.__table.update_item(
+                    Key={"title": title, "item_type": item_type},
+                    UpdateExpression="set completed = :c",
+                    ExpressionAttributeValues={":c": newStatus},
+                    ReturnValues="UPDATED_NEW",
+                )
+
+                cls.__todos[title].completed = bool(newStatus)
+                return JsonResponse(
+                    {
+                        "message": "Todo status updated successfully",
+                        "updated": response["Attributes"],
+                    },
+                    status=204,
+                )

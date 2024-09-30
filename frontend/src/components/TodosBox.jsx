@@ -7,8 +7,9 @@ export function TodosBox({ getTodos, todos }) {
   const deleteTodo = async (title, item_type) => {
     try {
       const response = await api.delete(
-        `api/todos/delete/${title}/${item_type}`);
-  
+        `api/todos/delete/${title}/${item_type}`
+      );
+
       if (response.status === 204) {
         console.log("Task deleted successfully");
         // Optionally refresh tasks or update state here
@@ -21,12 +22,11 @@ export function TodosBox({ getTodos, todos }) {
     getTodos();
   };
 
-  const editTodo = async (title, item_type, newData="edited") => {
+  const editTodo = async (title, item_type, newData = "edited") => {
     try {
-      const response = await api.put(
-        `api/todos/edit/${title}/${item_type}`,
-        { newData }
-      );
+      const response = await api.put(`api/todos/edit/${title}/${item_type}`, {
+        newData,
+      });
 
       if (response.status === 204) {
         console.log("Todo was edited successfully");
@@ -48,6 +48,8 @@ export function TodosBox({ getTodos, todos }) {
           onDelete={deleteTodo}
           onEdit={editTodo}
           key={todo.title}
+          getTodos={getTodos}
+
         />
       ))}
     </div>

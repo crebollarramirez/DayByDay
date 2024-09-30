@@ -32,8 +32,6 @@ class Todo:
 class FrequentTask:
     __ITEM_TYPE = 'FREQUENT'
 
-
-
     def __init__(self, title, content, frequency, completed, timeFrame) -> None:
         self.title: str = title
         self.content: str = content

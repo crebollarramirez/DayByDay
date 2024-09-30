@@ -228,6 +228,15 @@ def addDummyData():
         "timeFrame": ("5:00PM", "7:00PM")
     }
 
+    Item15 = {
+        "item_type": "FREQUENT",
+        "title": "Eat a carrot",
+        "content": "Eat about 2 of them",
+        "frequency": "EVERYDAY",
+        "completed": False,
+        "timeFrame": ("1:00AM", "2:00AM")
+    }
+
 
     SampleTodo = {
         "item_type": "TODO",
