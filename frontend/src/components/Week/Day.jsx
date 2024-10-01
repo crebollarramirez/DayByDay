@@ -1,10 +1,9 @@
 import React from "react";
-import { Task } from "./Task";
+import { Task } from "../Task";
 
-export function Day({ day, tasks }) {
+export function Day({ day, tasks, getWeek }) {
     const isTasksEmpty = Object.keys(tasks).length === 0;
 
-  console.log(tasks);
   return (
     <div className="day-container">
         <h2>{day}</h2>
@@ -13,7 +12,7 @@ export function Day({ day, tasks }) {
                 <p>No tasks for today</p>
             ) : (
                 Object.entries(tasks).map(([taskKey, task]) => (
-                    <Task key={taskKey} task={task}/>
+                    <Task key={taskKey} task={task} getWeek={getWeek}/>
               ))
             )
         }

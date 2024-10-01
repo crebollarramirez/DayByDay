@@ -265,7 +265,43 @@ def addDummyData():
 # delete_table()
 # create_dynamodb_table()
 # addDummyData()
-show()
+# show()
+
+# Initialize the parser
+parser = argparse.ArgumentParser(description="Manipulating the table")
+
+# Define the arguments
+parser.add_argument('-d', action='store_true', help="Deletes Table")
+parser.add_argument('-c', action='store_true', help="Creates Table")
+parser.add_argument('-a', action='store_true', help="Add dummy values")
+parser.add_argument('-s', action='store_true', help="Show Table")
+parser.add_argument('-A', action='store_true', help="Reset Table, add dummy data, and display table")
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Debugging output to check if args are parsed
+print(args)
+
+# Conditional checks for the flags
+if args.d:
+    delete_table()
+
+if args.c:
+    create_dynamodb_table()
+
+if args.a:
+    addDummyData()
+
+if args.s:
+    show()
+
+if args.A:
+    delete_table()
+    create_dynamodb_table()
+    addDummyData()
+    show()
+
 
 
 

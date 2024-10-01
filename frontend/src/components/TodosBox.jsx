@@ -3,6 +3,7 @@ import api from "../api";
 import { Todo } from "./Todo";
 
 export function TodosBox({ getTodos, todos }) {
+  
   // Function to delete a task
   const deleteTodo = async (title, item_type) => {
     try {

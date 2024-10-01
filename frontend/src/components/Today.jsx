@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Task } from "./Week/Task";
+import { Task } from "./Task";
 import api from "../api";
 
 export function Today({ className }) {
@@ -11,8 +11,6 @@ export function Today({ className }) {
       .then((res) => res.data)
       .then((data) => {
         setToday(data);
-        console.log("this is today");
-        console.log(data);
       })
       .catch((err) => alert(err));
   };
@@ -20,13 +18,11 @@ export function Today({ className }) {
   useEffect(() => {
     getToday();
   }, []);
-  console.log("this is todaaaaaaaa");
-  console.log(today);
   return (
     <div className={className}>
       <h1>Today</h1>
       {Object.entries(today).map(([taskKey, task]) => (
-        <Task key={taskKey} task={task} />
+        <Task key={taskKey} task={task} getWeek={getToday} />
       ))}
     </div>
   );

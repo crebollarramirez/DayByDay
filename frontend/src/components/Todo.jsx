@@ -3,15 +3,11 @@ import api from "./../api";
 
 export function Todo({ todo, onDelete, onEdit, getTodos }) {
   const setStatus = async (todo) => {
-    console.log("This is the compelted status:")
-
     try {
       const response = await api.put(
-        `api/todos/status/${todo.title}/${todo.item_type}`,
+        `api/all/status/${todo.title}/${todo.item_type}`,
         { completed: !todo.completed }
       );
-
-
 
       if (response.status === 204) {
         console.log("Todo was edited successfully");

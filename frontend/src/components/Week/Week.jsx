@@ -11,8 +11,6 @@ export function Week() {
       .then((res) => res.data)
       .then((data) => {
         setWeekData(data);
-        console.log("This is the week");
-        console.log(data);
       })
       .catch((err) => alert(err));
   };
@@ -25,7 +23,7 @@ export function Week() {
     <div className="week-container">
       <h1>Week</h1>
       {Object.entries(weekData).map(([day, tasks]) => (
-        <Day day={day} tasks={tasks} />
+        <Day day={day} tasks={tasks} getWeek={getWeek} />
       ))}
     </div>
   );

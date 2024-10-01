@@ -86,6 +86,19 @@ class ScheduleManager:
         cls.__week = {key: cls.__week[key] for key in reordered_days}
 
     @classmethod
+    def __resetWeek(cls):
+        cls.__week.clear()
+        cls.__week = {
+            "MONDAY": {},
+            "TUESDAY": {},
+            "WEDNESDAY": {},
+            "THURSDAY": {},
+            "FRIDAY": {},
+            "SATURDAY": {},
+            "SUNDAY": {},
+        }
+
+    @classmethod
     def getTodayDate(cls) -> tuple:
         cls.__setTodayDate()
         return cls.__today
@@ -140,59 +153,9 @@ class ScheduleManager:
     @classmethod
     def getWeek(cls, request) -> JsonResponse:
         if request.method == "GET":
-
             # this is just to test the data
-            test = {
-                "MONDAY": {
-                    "task1": {
-                        "item_type": "FREQUENT",
-                        "title": "Morning Walk",
-                        "content": "Take the dog for a morning walk.",
-                        "frequency": "MONDAY",
-                        "completed": False,
-                        "timeFrame": ("7:00AM", "8:00AM"),
-                    },
-                    "task2": {
-                        "item_type": "FREQUENT",
-                        "title": "Night Stuff",
-                        "content": "go to sleep",
-                        "frequency": "MONDAY",
-                        "completed": False,
-                        "timeFrame": ("10:00PM", "8:00AM"),
-                    },
-                },
-                "TUESDAY": {
-                    "task1": {
-                        "item_type": "FREQUENT",
-                        "title": "Grocery Shopping",
-                        "content": "Buy groceries for the week.",
-                        "frequency": "TUESDAY",
-                        "completed": False,
-                        "timeFrame": ("10:00AM", "11:00AM"),
-                    },
-                },
-                "WEDNESDAY": {
-                    "task1": {
-                        "item_type": "FREQUENT",
-                        "title": "Weekly Meeting",
-                        "content": "Attend the project weekly meeting.",
-                        "frequency": "WEDNESDAY",
-                        "completed": False,
-                        "timeFrame": ("2:00PM", "3:00PM"),
-                    }
-                },
-                "THURSDAY": {
-                    "task1": {
-                        "item_type": "FREQUENT",
-                        "title": "Weekly Meeting",
-                        "content": "Attend the project weekly meeting.",
-                        "frequency": "WEDNESDAY",
-                        "completed": False,
-                        "timeFrame": ("2:00PM", "3:00PM"),
-                    }
-                },
-            }
             cls.__setUpWeek()
+            # print(cls.__week["FRIDAY"])
 
             # returning week starting after today
             return JsonResponse(dict(list(cls.__week.items())[1:]))
@@ -211,7 +174,6 @@ class ScheduleManager:
 
     @classmethod
     def getTodos(cls, request) -> JsonResponse:
-        cls.__setUpWeek()
         if request.method == "GET":
             # Create a list of dictionaries for each Todo object
             todos_dict_list = [
@@ -331,6 +293,27 @@ class ScheduleManager:
                     {"message": "Todo deleted successfully."}, status=204
                 )
 
+            elif item_type == "TASK" and title in cls.__tasks:
+                cls.__table.delete_item(Key={"title": title, "item_type": item_type})
+                del cls.__tasks[title]
+                cls.__resetWeek()
+                return JsonResponse(
+                    {"message": "Todo deleted successfully."}, status=204
+                )
+
+            elif item_type == "FREQUENT":
+                cls.__table.delete_item(Key={"title": title, "item_type": item_type})
+                print(f"title: {title} \t item_type: {item_type}")
+                for day in cls.__frequentTasks.keys():
+                    if title in cls.__frequentTasks[day]:
+                        del cls.__frequentTasks[day][title]  # This does delete
+                        break
+
+                cls.__resetWeek()
+                return JsonResponse(
+                    {"message": "Todo deleted successfully."}, status=204
+                )
+
     @classmethod
     @csrf_exempt
     def update(cls, request, title, item_type) -> JsonResponse:
@@ -360,7 +343,7 @@ class ScheduleManager:
         if request.method == "PUT":
             if item_type == "TODO":
                 newStatus = json.loads(request.body)
-                newStatus = newStatus.get('completed')
+                newStatus = newStatus.get("completed")
                 response = cls.__table.update_item(
                     Key={"title": title, "item_type": item_type},
                     UpdateExpression="set completed = :c",
@@ -369,6 +352,28 @@ class ScheduleManager:
                 )
 
                 cls.__todos[title].completed = bool(newStatus)
+                return JsonResponse(
+                    {
+                        "message": "Todo status updated successfully",
+                        "updated": response["Attributes"],
+                    },
+                    status=204,
+                )
+            
+            if item_type == "FREQUENT":
+                newStatus = json.loads(request.body)
+                newStatus = newStatus.get("completed")
+                response = cls.__table.update_item(
+                    Key={"title": title, "item_type": item_type},
+                    UpdateExpression="set completed = :c",
+                    ExpressionAttributeValues={":c": newStatus},
+                    ReturnValues="UPDATED_NEW",
+                )
+
+                for day in cls.__frequentTasks.keys():
+                    if title in cls.__frequentTasks[day]:
+                        cls.__frequentTasks[day][title].completed = not(cls.__frequentTasks[day][title].completed)
+                        break
                 return JsonResponse(
                     {
                         "message": "Todo status updated successfully",
