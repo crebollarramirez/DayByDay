@@ -106,17 +106,18 @@ class Goal:
         }
 
 class User:
-    def __init__(self, user_id, username, password):
-        self.user_id = user_id
+    def __init__(self, username, password):
         self.username = username
 
         # This is hashed
         self.password = password
+        self.is_active = True
 
     
     def to_dict(self):
         return {
-            'user_id': self.user_id,
             'username': self.username,
             'password': self.password,  # Store hashed password
+            'attribute_type': 'login',
+            'is_active': True,
         } 

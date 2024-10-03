@@ -396,14 +396,12 @@ class UserManager:
             for item in items:
                 attribute_type = item.get('attribute_type')
                 if attribute_type == 'login':
-                    user_id = item.get('user_id')
                     username = item.get('username')
                     password = item.get('password')
                     
-                    cls.__users_login[user_id] = User(
-                        user_id=user_id,
+                    cls.__users_login[username] = User(
                         username=username,
-                        password=password
+                        password=password,
                     )
                     
         except Exception as e:
@@ -411,36 +409,41 @@ class UserManager:
         
 
     @classmethod
-    def hash_password(self, password) -> bcrypt:
-        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    def hash_password(cls, password) -> bcrypt:
+        return str(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
 
     @classmethod
-    def verify_password(self, password, hashed_password) -> bool:
+    def verify_password(cls, password, hashed_password) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+# This works well
     @classmethod
-    def create_user(self, username, password) -> User:
-        hashed_password = self.hash_password(password)
-        user_id = "generated-unique-user-id"  # Create a unique ID (UUID, for example)
-        user = User(user_id=user_id, username=username, password=hashed_password)
-        # Save user to DynamoDB
-        return user
+    def create_user(cls, username, password) -> bool:
+        if username in cls.__users_login: 
+            return False
+        hashed_password = cls.hash_password(password)
 
+        cls.__users_login[username] = User(username=username, password=hashed_password)
+        cls.__table.put_item(Item=cls.__users_login[username].to_dict()
+        )
+
+        return True
+        
 
     @classmethod
-    # Store user in DynamoDB
-    def store_user(cls, user: User):
-        try:
-            cls.__table.put_item(Item=user.to_dict())
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-
-        # Retrieve user by username
-    def get_user_by_username(cls,username):
-        try:
-            response = cls.__table.get_item(Key={'username': username})
-            if 'Item' in response:
-                return response['Item']
+    def authenticate_user(cls, username, password) -> False:
+        if username not in cls.__users_login:
             return None
-        except ClientError as e:
-            print(e.response['Error']['Message'])
+        
+        user = cls.__users_login[username]
+
+        if cls.verify_password(password, cls.__users_login[username].password):
+            return user
+        
+        return None
+
+    def get_user(cls,username) -> User:
+        if username in cls.__users_login:
+            return cls.__users_login[username]
+        
+        return None

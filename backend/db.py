@@ -90,11 +90,11 @@ def create_dynamodb_table():
         table = dynamodb.create_table(
             TableName=table_name,
             KeySchema=[
-                {"AttributeName": "user_id", "KeyType": "HASH"},  # Partition key
+                {"AttributeName": "username", "KeyType": "HASH"},  # Partition key
                 {"AttributeName": "attribute_type", "KeyType": "RANGE"},  # Sort key
             ],
             AttributeDefinitions=[
-                {"AttributeName": "user_id", "AttributeType": "S"},  # String type
+                {"AttributeName": "username", "AttributeType": "S"},  # String type
                 {"AttributeName": "attribute_type", "AttributeType": "S"},  # String type
             ],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
@@ -306,9 +306,8 @@ def addDummyData():
     
 
     User1 = {
-        'user_id': 'userID1',
+        'username': 'test',
         'attribute_type': "login",
-        'username': bcrypt.hashpw('testing'.encode('utf-8'), bcrypt.gensalt())
     }
     table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME2)
     table.put_item(Item=User1)

@@ -25,17 +25,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+FALLBACK_SECRET_KEY = os.getenv("FALLBACK_SECRET_KEY")
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_DYNAMODB_TABLE_NAME = os.getenv("AWS_DYNAMODB_TABLE_NAME")
+AWS_DYNAMODB_TABLE_NAME2 = os.getenv("AWS_DYNAMODB_TABLE_NAME2")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+
+AUTHENTICATION_BACKENDS = [
+    'api.backends.DynamoDB_Backend',  # Replace with your actual backend module
+]
+
+# Add a dummy database to satisfy Django's requirement for DATABASES
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.dummy',
+    }
+}
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -47,8 +62,10 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'USER_ID_FIELD': 'username',
+    'JWT_SECRET_KEY': os.getenv('DJANGO_SECRET_KEY', 'your_fallback_secret_key'),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=4),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
 }
 
 # Application definition
@@ -100,18 +117,8 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DB_ENDPOINT = "http://localhost:8000"
-DB_TABLE = 'tasks'
+# DB_ENDPOINT = "http://localhost:8000"
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'dynamorm',
-#         'NAME': DB_TABLE,  # Your DynamoDB table name
-#         'OPTIONS': {
-#             'endpoint_url': DB_ENDPOINT,  # Your DynamoDB endpoint
-#         },
-#     }
-# }
 
 
 
