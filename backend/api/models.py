@@ -3,6 +3,7 @@ frequency: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 
 EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
 """
+from botocore.exceptions import ClientError
 
 # For todo list 
 class Todo:
@@ -52,6 +53,9 @@ class FrequentTask:
             'item_type': self.getItemType(),  # Include item type if needed
             'timeFrame': self.timeFrame
         }
+    
+    # def __repr__(self) -> dict:
+    #     return self.toDict()
 
 class Task:
     __ITEM_TYPE = "TASK"
@@ -101,3 +105,18 @@ class Goal:
             'item_type': self.getItemType()
         }
 
+class User:
+    def __init__(self, user_id, username, password):
+        self.user_id = user_id
+        self.username = username
+
+        # This is hashed
+        self.password = password
+
+    
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'username': self.username,
+            'password': self.password,  # Store hashed password
+        } 

@@ -6,8 +6,8 @@ from django.conf import settings
 from enum import Enum
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
-from datetime import datetime
-
+from datetime import datetime, timedelta
+import bcrypt
 
 DAYS_OF_THE_WEEK = [
     "MONDAY",
@@ -44,15 +44,7 @@ class ScheduleManager:
     # For displaying today and the week
     __today = ()
     __todayTasks = {}
-    __week = {
-        "MONDAY": {},
-        "TUESDAY": {},
-        "WEDNESDAY": {},
-        "THURSDAY": {},
-        "FRIDAY": {},
-        "SATURDAY": {},
-        "SUNDAY": {},
-    }
+    __week = {}
 
     # modify this later so it returns a value depending if it was able to connect to the database
     @classmethod
@@ -69,34 +61,32 @@ class ScheduleManager:
     def __setTodayDate(cls) -> None:
         today = datetime.now()
         # Format date as "MM-DD-YYYY" and get weekday
-        cls.__today = (today.strftime("%m-%d-%Y"), 3)  # today.weekday() % 7)
+        cls.__today = (today,  today.strftime("%m-%d-%Y"), today.strftime("%A"))
+        print(cls.__today[2])
+
+    @classmethod
+    def __setUpTodayTasks(cls):
+        cls.__todayTasks
+        for title, task in cls.__frequentTasks[cls.__today[2].upper()].items():
+            cls.__todayTasks[title] = task.toDict()
 
     @classmethod
     def __setUpWeek(cls) -> None:
-        # This is what puts all the tasks for the week, including today
-        for day in DAYS_OF_THE_WEEK:
-            for title, task in cls.__frequentTasks[day].items():
+        for i in range(1,7):
+            day = str((cls.__today[0] + timedelta(days=i)).strftime("%A")).upper()
+            if day not in cls.__week:
+                cls.__week[day] = {}
+            for title, task in cls.__frequentTasks[day.upper()].items():
                 cls.__week[day][title] = task.toDict()
 
-        # Reordering from today
-        reordered_days = (
-            DAYS_OF_THE_WEEK[cls.__today[1] :] + DAYS_OF_THE_WEEK[: cls.__today[1]]
-        )
 
-        cls.__week = {key: cls.__week[key] for key in reordered_days}
+        cls.__setUpTodayTasks()
+        print(cls.__week)
+
 
     @classmethod
     def __resetWeek(cls):
         cls.__week.clear()
-        cls.__week = {
-            "MONDAY": {},
-            "TUESDAY": {},
-            "WEDNESDAY": {},
-            "THURSDAY": {},
-            "FRIDAY": {},
-            "SATURDAY": {},
-            "SUNDAY": {},
-        }
 
     @classmethod
     def getTodayDate(cls) -> tuple:
@@ -140,25 +130,23 @@ class ScheduleManager:
                         timeFrame=item.get("timeFrame"),
                         date=item.get("date"),
                     )
-                elif item_type == "GOAL":
-                    cls.__frquencyTasks[item["title"]] = Goal(
-                        title=item["title"],
-                        content=item["content"],
-                        completed=item.get("completed", False),
-                        taskMap=item.get("tasksMap", {}),
-                    )
+                # elif item_type == "GOAL":
+                #     cls.__frequencyTasks[item["title"]] = Goal(
+                #         title=item["title"],
+                #         content=item["content"],
+                #         completed=item.get("completed", False),
+                #         taskMap=item.get("tasksMap", {}),
+                #     )
         except Exception as e:
-            print(f"Error with fetching data: {e}")
+            print(f"Error with fetching calendar data: {e}")
 
     @classmethod
     def getWeek(cls, request) -> JsonResponse:
         if request.method == "GET":
             # this is just to test the data
             cls.__setUpWeek()
-            # print(cls.__week["FRIDAY"])
-
-            # returning week starting after today
-            return JsonResponse(dict(list(cls.__week.items())[1:]))
+            print(cls.__week)
+            return JsonResponse(cls.__week)
 
     # @classmethod
     # def __setToday(cls) -> None:
@@ -166,7 +154,8 @@ class ScheduleManager:
     @classmethod
     def getToday(cls, response) -> JsonResponse:
         if response.method == "GET":
-            return JsonResponse(cls.__week[DAYS_OF_THE_WEEK[cls.__today[1]]])
+            cls.__setUpTodayTasks()
+            return JsonResponse(cls.__todayTasks)
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -229,6 +218,7 @@ class ScheduleManager:
                         status=400,
                     )
 
+                # remember to change to support 2d dict
                 cls.__frequentTasks[title] = FrequentTask(
                     title=title,
                     content=content,
@@ -381,3 +371,76 @@ class ScheduleManager:
                     },
                     status=204,
                 )
+
+
+class UserManager:
+    __table = None
+    __users_login = {}
+
+    @classmethod
+    def __set_table(cls) -> None:
+        cls.__table = boto3.resource(
+            "dynamodb",
+            region_name=settings.AWS_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            endpoint_url="http://localhost:8080",  # For local DynamoDB instance
+        ).Table(settings.AWS_DYNAMODB_TABLE_NAME2)
+
+    @classmethod
+    def getData(cls):
+        cls.__set_table()
+        try: 
+            response = cls.__table.scan()
+            items = response.get("Items", [])
+            for item in items:
+                attribute_type = item.get('attribute_type')
+                if attribute_type == 'login':
+                    user_id = item.get('user_id')
+                    username = item.get('username')
+                    password = item.get('password')
+                    
+                    cls.__users_login[user_id] = User(
+                        user_id=user_id,
+                        username=username,
+                        password=password
+                    )
+                    
+        except Exception as e:
+            print(f"Error with fetching user data: {e}")
+        
+
+    @classmethod
+    def hash_password(self, password) -> bcrypt:
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    @classmethod
+    def verify_password(self, password, hashed_password) -> bool:
+        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+    @classmethod
+    def create_user(self, username, password) -> User:
+        hashed_password = self.hash_password(password)
+        user_id = "generated-unique-user-id"  # Create a unique ID (UUID, for example)
+        user = User(user_id=user_id, username=username, password=hashed_password)
+        # Save user to DynamoDB
+        return user
+
+
+    @classmethod
+    # Store user in DynamoDB
+    def store_user(cls, user: User):
+        try:
+            cls.__table.put_item(Item=user.to_dict())
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+
+        # Retrieve user by username
+    def get_user_by_username(cls,username):
+        try:
+            response = cls.__table.get_item(Key={'username': username})
+            if 'Item' in response:
+                return response['Item']
+            return None
+        except ClientError as e:
+            print(e.response['Error']['Message'])
