@@ -1,16 +1,19 @@
 from rest_framework import serializers
-from services import UserManager
+from django.contrib.auth.models import User
+from .models import Todo
 
-class UserSerializer(serializers.Serializer):
-    user_id = serializers.CharField(read_only=True)
-    username = serializers.CharField(max_length=100)
-    password = serializers.CharField(write_only=True)
+# Serializer validate username and password for us
+class UserSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = User
+        fields = ["id", "username", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        user_manager = UserManager()
-        user = user_manager.create_user(
-            username=validated_data['username'],
-            password=validated_data['password']
-        )
-        UserManager.store_user(user)  # Save user to DynamoDB
+        user = User.objects.create_user(**validated_data)
         return user
+    
+class TodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Todo
+        fields = ['title', 'content', 'completed', 'item_type']

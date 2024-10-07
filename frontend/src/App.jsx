@@ -10,21 +10,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
-// const [todos, setTodos] = useState([]);
 
-// useEffect(() => {
-//   getTodos();
-// }, []);
-
-// const getTodos = () => {
-//   api
-//     .get("./api/todos/list/")
-//     .then((res) => res.data)
-//     .then((data) => {
-//       setTodos(data);
-//     })
-//     .catch((err) => alert(err));
-// };
 
 function Logout() {
   localStorage.clear();

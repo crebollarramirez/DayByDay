@@ -1,9 +1,13 @@
-import Form from "../components/Form"
+import Form from "../components/Form";
+import { TodosBox } from "../components/TodosBox";
 
 function Home() {
-    return (
-        <h1>this is the home page</h1>
-    )
+  return (
+    <main>
+      <h1>this is the home page</h1>
+      <TodosBox />
+    </main>
+  );
 }
 
 export default Home;

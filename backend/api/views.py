@@ -1,49 +1,40 @@
-from django.http import JsonResponse
 from boto3.dynamodb.conditions import Attr
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .services import UserManager  # Import the UserManager
-from rest_framework.permissions import AllowAny
+from .services import ScheduleManager  # Import the UserManager
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from .serializers import UserSerializer, TodoSerializer
 
 
-class LoginView(APIView):
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
 
-        # Call UserManager to validate the login
-        user = UserManager.authenticate_user(username, password)
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
+class TodosList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Retrieve the authenticated user
+        user = self.request.user
+        user_id = user.id
+
+        # Assuming get_user_schedule is a method in your ScheduleManager
+        return ScheduleManager.getTodos(self.request, user_id)
         
-        return Response({"error": "Invalid credentials"}, status=400)
+    def perform_create(self, request):
+        user = request.user
+        user_id = user.id
+        title = request.data.get('title')
+        content = request.data.get('content')
+        completed = False
 
-        
-class CreateUserView(APIView):
-    permission_classes = [AllowAny]
-                      
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        # Call UserManager to handle the user registration
-        result = UserManager().create_user(username, password)
-
-        print(username)
-        print(password)
-
-        if result:
-            return Response({"message": result}, status=status.HTTP_201_CREATED)
-            
-        return Response({"message": result}, status=status.HTTP_400_BAD_REQUEST)
+        ScheduleManager.create()
         

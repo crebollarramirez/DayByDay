@@ -6,7 +6,7 @@ EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
 from botocore.exceptions import ClientError
 
 # For todo list 
-class Todo:
+class Todo():
     __ITEM_TYPE = 'TODO'
 
     def __init__(self, title, content, completed) -> None:
@@ -104,20 +104,3 @@ class Goal:
             'taskMap': self.tasksMap,
             'item_type': self.getItemType()
         }
-
-class User:
-    def __init__(self, username, password):
-        self.username = username
-
-        # This is hashed
-        self.password = password
-        self.is_active = True
-
-    
-    def to_dict(self):
-        return {
-            'username': self.username,
-            'password': self.password,  # Store hashed password
-            'attribute_type': 'login',
-            'is_active': True,
-        } 

@@ -10,4 +10,3 @@ class ApiConfig(AppConfig):
     def ready(self):
         # Run getData() only when RUN_MAIN is not set to prevent double execution during reload
         ScheduleManager().getData()
-        UserManager().getData()

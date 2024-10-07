@@ -40,17 +40,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-AUTHENTICATION_BACKENDS = [
-    'api.backends.DynamoDB_Backend',  # Replace with your actual backend module
-]
-
-# Add a dummy database to satisfy Django's requirement for DATABASES
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.dummy',
-    }
-}
-
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -114,13 +103,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-# DB_ENDPOINT = "http://localhost:8000"
 
-
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation

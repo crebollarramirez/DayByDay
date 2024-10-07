@@ -41,22 +41,6 @@ def delete_table():
             print("Waiting for table to delete...")
             time.sleep(5)
 
-    table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME2)
-    
-    # Delete the table
-    table.delete()
-    print(f"Deleting table {AWS_DYNAMODB_TABLE_NAME}...")
-    
-    # Wait until the table is deleted
-    while True:
-        try:
-            table.wait_until_not_exists()
-            print(f"Table {AWS_DYNAMODB_TABLE_NAME} deleted successfully.")
-            break
-        except Exception as e:
-            print("Waiting for table to delete...")
-            time.sleep(5)
-
 def create_dynamodb_table():
     # Define the table
     table_name = AWS_DYNAMODB_TABLE_NAME
@@ -72,30 +56,6 @@ def create_dynamodb_table():
             AttributeDefinitions=[
                 {"AttributeName": "title", "AttributeType": "S"},  # String type
                 {"AttributeName": "item_type", "AttributeType": "S"},  # String type
-            ],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
-        )
-
-        # Wait until the table is created
-        table.wait_until_exists()
-        print(f"Table {table_name} created successfully.")
-
-    except ClientError as e:
-        print(f'Error creating table: {e.response["Error"]["Message"]}')
-
-    table_name = AWS_DYNAMODB_TABLE_NAME2
-
-    try:
-        # Create the DynamoDB table
-        table = dynamodb.create_table(
-            TableName=table_name,
-            KeySchema=[
-                {"AttributeName": "username", "KeyType": "HASH"},  # Partition key
-                {"AttributeName": "attribute_type", "KeyType": "RANGE"},  # Sort key
-            ],
-            AttributeDefinitions=[
-                {"AttributeName": "username", "AttributeType": "S"},  # String type
-                {"AttributeName": "attribute_type", "AttributeType": "S"},  # String type
             ],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
         )
@@ -302,15 +262,6 @@ def addDummyData():
     table.put_item(Item=Item13)
     table.put_item(Item=Item14)
     table.put_item(Item=SampleTodo)
-
-    
-
-    User1 = {
-        'username': 'test',
-        'attribute_type': "login",
-    }
-    table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME2)
-    table.put_item(Item=User1)
 
 
 # delete_table()
