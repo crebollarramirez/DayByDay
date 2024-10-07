@@ -3,6 +3,8 @@ import Form from "../components/Form";
 import { TodosBox } from "../components/TodosBox";
 import React, {useState, useEffect} from "react"
 import api from "../api";
+import {Week} from '../components/Week/Week'
+import {Today} from '../components/Today'
 
 function Home() {
   const [todos, setTodos] = useState([]);
@@ -25,6 +27,8 @@ function Home() {
       <h1>this is the home page</h1>
       <TodosBox getTodos={getTodos} todos={todos}/>
       <CreateTodoBlock getTodos={getTodos}/>
+      <Week />
+      <Today />
     </main>
   );
 }

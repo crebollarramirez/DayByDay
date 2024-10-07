@@ -19,23 +19,12 @@ DAYS_OF_THE_WEEK = [
     "SUNDAY",
 ]
 
+
 class ScheduleManager:
     # Private Class Member Variables
     __table = None
     __todos = {}
-    __frequentTasks = {
-        "MONDAY": {},
-        "TUESDAY": {},
-        "WEDNESDAY": {},
-        "THURSDAY": {},
-        "FRIDAY": {},
-        "SATURDAY": {},
-        "SUNDAY": {},
-        "EVERYDAY": {},
-        "BIWEEKLY": {},
-        "MONTHLY": {},
-        "YEARLY": {},
-    }
+    __frequentTasks = {}
 
     # key : id
     # value dict that holds all the todos
@@ -62,7 +51,7 @@ class ScheduleManager:
     def __setTodayDate(cls) -> None:
         today = datetime.now()
         # Format date as "MM-DD-YYYY" and get weekday
-        cls.__today = (today,  today.strftime("%m-%d-%Y"), today.strftime("%A"))
+        cls.__today = (today, today.strftime("%m-%d-%Y"), today.strftime("%A"))
         print(cls.__today[2])
 
     @classmethod
@@ -73,17 +62,10 @@ class ScheduleManager:
 
     @classmethod
     def __setUpWeek(cls) -> None:
-        for i in range(1,7):
-            day = str((cls.__today[0] + timedelta(days=i)).strftime("%A")).upper()
-            if day not in cls.__week:
-                cls.__week[day] = {}
-            for title, task in cls.__frequentTasks[day.upper()].items():
-                cls.__week[day][title] = task.toDict()
-
+        pass
 
         cls.__setUpTodayTasks()
         print(cls.__week)
-
 
     @classmethod
     def __resetWeek(cls):
@@ -105,40 +87,57 @@ class ScheduleManager:
             items = response.get("Items", [])
 
             for item in items:
-                id, item_type = item.get("id#item_type").split('#')
+                id, item_type = item.get("id#item_type").split("#")
                 id = str(id)
-                _ , title = item.get("id#title").split('#')
+                _, title = item.get("id#title").split("#")
 
-                cls.__todos[id] = {}
+                if id not in cls.__todos:
+                    cls.__todos[id] = {}
+
+                if id not in cls.__frequentTasks:
+                    cls.__frequentTasks[id] = {
+                        "MONDAY": {},
+                        "TUESDAY": {},
+                        "WEDNESDAY": {},
+                        "THURSDAY": {},
+                        "FRIDAY": {},
+                        "SATURDAY": {},
+                        "SUNDAY": {},
+                        "EVERYDAY": {},
+                        "BIWEEKLY": {},
+                        "MONTHLY": {},
+                        "YEARLY": {},
+                    }
+
+                if id not in cls.__tasks:
+                    cls.__tasks[id] = {}
+
                 if item_type == "TODO":
-                    if id in cls.__todos:
-                        cls.__todos[id][title] = Todo(
-                            id=id,
-                            title=title,
-                            content=item["content"],
-                            completed=item.get("completed", False),
-                        )
-
-                # elif item_type == "FREQUENT":
-                #     cls.__frequentTasks[item["frequency"]][title] = (
-                #         FrequentTask(
-                #             title=title,
-                #             content=item["content"],
-                #             frequency=item["frequency"],
-                #             completed=item.get("completed", False),
-                #             timeFrame=item.get("timeFrame"),
-                #         )
-                #     )
-                # elif item_type == "TASK":
-                #     cls.__tasks[title] = Task(
-                #         title=title,
-                #         content=item["content"],
-                #         completed=item.get("completed", False),
-                #         timeFrame=item.get("timeFrame"),
-                #         date=item.get("date"),
-                #     )
+                    cls.__todos[id][title] = Todo(
+                        id=id,
+                        title=title,
+                        content=item["content"],
+                        completed=item.get("completed", False),
+                    )
+                elif item_type == "FREQUENT":
+                    cls.__frequentTasks[id][item["frequency"]][title] = FrequentTask(
+                        title=title,
+                        content=item["content"],
+                        frequency=item["frequency"],
+                        completed=item.get("completed", False),
+                        timeFrame=item.get("timeFrame"),
+                    )
+                    pass
+                elif item_type == "TASK":
+                    cls.__tasks[title] = Task(
+                        title=title,
+                        content=item["content"],
+                        completed=item.get("completed", False),
+                        timeFrame=item.get("timeFrame"),
+                        date=item.get("date"),
+                    )
                 # elif item_type == "GOAL":
-                #     cls.__frequencyTasks[title] = Goal(
+                #     cls.__frequentTasks[title] = Goal(
                 #         title=title,
                 #         content=item["content"],
                 #         completed=item.get("completed", False),
@@ -150,19 +149,42 @@ class ScheduleManager:
     @classmethod
     def getWeek(cls, request) -> JsonResponse:
         if request.method == "GET":
-            # this is just to test the data
-            cls.__setUpWeek()
-            print(cls.__week)
-            return JsonResponse(cls.__week)
+            week = {}
+
+            user_id = str(request.user)
+            if user_id not in cls.__frequentTasks:
+                cls.__frequentTasks[user_id] = {
+                    "MONDAY": {},
+                    "TUESDAY": {},
+                    "WEDNESDAY": {},
+                    "THURSDAY": {},
+                    "FRIDAY": {},
+                    "SATURDAY": {},
+                    "SUNDAY": {},
+                }
+
+            for i in range(1, 7):
+                day = str((cls.__today[0] + timedelta(days=i)).strftime("%A")).upper()
+                if day not in week:
+                    week[day] = {}
+                for title, task in cls.__frequentTasks[user_id][day.upper()].items():
+                    week[day][title] = task.toDict()
+
+            return week
 
     # @classmethod
     # def __setToday(cls) -> None:
 
     @classmethod
-    def getToday(cls, response) -> JsonResponse:
-        if response.method == "GET":
-            cls.__setUpTodayTasks()
-            return JsonResponse(cls.__todayTasks)
+    def getToday(cls, request) -> dict:
+        if request.method == "GET":
+            today = {}
+
+            user_id = str(request.user)
+            for title,task in cls.__frequentTasks[user_id][cls.__today[2].upper()].items():
+                today[title] = task.toDict()
+
+            return today
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -172,9 +194,10 @@ class ScheduleManager:
     def getTodos(cls, request) -> dict:
         if request.method == "GET":
             user_id = str(request.user)
-            
-            userTodos = cls.__todos[user_id]
 
+            if user_id not in cls.__todos:
+                cls.__todos[user_id] = {}
+            userTodos = cls.__todos[user_id]
 
             # Create a list of dictionaries for each Todo object
             todos_dict_list = [
@@ -199,7 +222,7 @@ class ScheduleManager:
                 title = data.get("title")
                 content = data.get("content")
                 completed = data.get("completed")
-                id=user_id
+                id = user_id
                 if title in cls.__todos:
                     return JsonResponse(
                         {"error": "Todo item with this title already exists"},
@@ -362,7 +385,7 @@ class ScheduleManager:
                     },
                     status=204,
                 )
-            
+
             if item_type == "FREQUENT":
                 newStatus = json.loads(request.body)
                 newStatus = newStatus.get("completed")
@@ -375,7 +398,9 @@ class ScheduleManager:
 
                 for day in cls.__frequentTasks.keys():
                     if title in cls.__frequentTasks[day]:
-                        cls.__frequentTasks[day][title].completed = not(cls.__frequentTasks[day][title].completed)
+                        cls.__frequentTasks[day][title].completed = not (
+                            cls.__frequentTasks[day][title].completed
+                        )
                         break
                 return JsonResponse(
                     {

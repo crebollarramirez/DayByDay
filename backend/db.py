@@ -102,29 +102,158 @@ def show():
             print()
 
 def addDummyData():
+    Item1 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Morning Walk",
+        "content": "Take the dog for a morning walk.",
+        "frequency": "MONDAY",
+        "completed": False,
+        "timeFrame": ("7:00AM", "8:00AM")
+    }
+
+    Item2 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Team Check-In",
+        "content": "Have a quick check-in with the team.",
+        "frequency": "MONDAY",
+        "completed": False,
+        "timeFrame": ("11:00AM", "11:30AM")
+    }
+
+    Item3 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Grocery Shopping",
+        "content": "Buy groceries for the week.",
+        "frequency": "TUESDAY",
+        "completed": False,
+        "timeFrame": ("10:00AM", "11:00AM")
+    }
+
+    Item4 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Yoga Class",
+        "content": "Attend a virtual yoga class.",
+        "frequency": "TUESDAY",
+        "completed": False,
+        "timeFrame": ("6:00PM", "7:00PM")
+    }
+
+    Item5 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Weekly Meeting",
+        "content": "Attend the project weekly meeting.",
+        "frequency": "WEDNESDAY",
+        "completed": False,
+        "timeFrame": ("2:00PM", "3:00PM")
+    }
+
+    Item6 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Water the Plants",
+        "content": "Water all the indoor plants.",
+        "frequency": "WEDNESDAY",
+        "completed": False,
+        "timeFrame": ("8:00AM", "8:30AM")
+    }
+
+    Item7 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Gym Session",
+        "content": "Workout at the gym after work.",
+        "frequency": "THURSDAY",
+        "completed": False,
+        "timeFrame": ("5:00PM", "6:30PM")
+    }
+
+    Item8 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Read a Book",
+        "content": "Read a chapter from a book.",
+        "frequency": "THURSDAY",
+        "completed": False,
+        "timeFrame": ("8:00PM", "9:00PM")
+    }
+
+    Item9 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Office Cleanup",
+        "content": "Organize and clean the office space.",
+        "frequency": "FRIDAY",
+        "completed": False,
+        "timeFrame": ("3:00PM", "4:00PM")
+    }
+
+    Item10 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Evening Workout",
+        "content": "Workout at the gym after work.",
+        "frequency": "FRIDAY",
+        "completed": False,
+        "timeFrame": ("5:00PM", "6:30PM")
+    }
+
+    Item11 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Family Time",
+        "content": "Spend quality time with the family.",
+        "frequency": "SATURDAY",
+        "completed": False,
+        "timeFrame": ("2:00PM", "4:00PM")
+    }
+
+    Item12 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Grocery Shopping",
+        "content": "Restock essential items for the week.",
+        "frequency": "SATURDAY",
+        "completed": False,
+        "timeFrame": ("10:00AM", "11:00AM")
+    }
+
+    Item13 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Meal Prep",
+        "content": "Prepare meals for the upcoming week.",
+        "frequency": "SUNDAY",
+        "completed": False,
+        "timeFrame": ("11:00AM", "1:00PM")
+    }
+
+    Item14 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Relaxation Time",
+        "content": "Take some time to relax and recharge.",
+        "frequency": "SUNDAY",
+        "completed": False,
+        "timeFrame": ("5:00PM", "7:00PM")
+    }
+
+    Item15 = {
+        "id#item_type": "chris#FREQUENT",
+        "id#title": "chris#Eat a carrot",
+        "content": "Eat about 2 of them",
+        "frequency": "EVERYDAY",
+        "completed": False,
+        "timeFrame": ("1:00AM", "2:00AM")
+    }
     pass
-    # table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
-    # table.put_item(Item=Item1)
-    # table.put_item(Item=Item2)
-    # table.put_item(Item=Item3)
-    # table.put_item(Item=Item4)
-    # table.put_item(Item=Item5)
-    # table.put_item(Item=Item6)
-    # table.put_item(Item=Item7)
-    # table.put_item(Item=Item8)
-    # table.put_item(Item=Item9)
-    # table.put_item(Item=Item10)
-    # table.put_item(Item=Item11)
-    # table.put_item(Item=Item12)
-    # table.put_item(Item=Item13)
-    # table.put_item(Item=Item14)
-    # table.put_item(Item=SampleTodo)
 
-
-# delete_table()
-# create_dynamodb_table()
-# addDummyData()
-# show()
+    table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
+    table.put_item(Item=Item1)
+    table.put_item(Item=Item2)
+    table.put_item(Item=Item3)
+    table.put_item(Item=Item4)
+    table.put_item(Item=Item5)
+    table.put_item(Item=Item6)
+    table.put_item(Item=Item7)
+    table.put_item(Item=Item8)
+    table.put_item(Item=Item9)
+    table.put_item(Item=Item10)
+    table.put_item(Item=Item11)
+    table.put_item(Item=Item12)
+    table.put_item(Item=Item13)
+    table.put_item(Item=Item14)
+    table.put_item(Item=Item15)
 
 # Initialize the parser
 parser = argparse.ArgumentParser(description="Manipulating the table")

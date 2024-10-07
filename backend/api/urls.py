@@ -6,8 +6,8 @@ urlpatterns = [
     path('todos/', views.TodosList.as_view(), name="create-todo"),
     path('todos/delete/<str:title>/<str:item_type>', ScheduleManager.delete, name='delete-todo'),
     path('todos/edit/<str:title>/<str:item_type>', ScheduleManager.update, name='edit-todo'),
-    path('week/list/', ScheduleManager.getWeek, name="week-list"),
-    path('today/list/', ScheduleManager.getToday, name="today-list"),
+    path('week/list/', views.WeekList.as_view(), name="week-list"),
+    path('today/list/', views.TodayList.as_view(), name="today-list"),
     path('all/status/<str:title>/<str:item_type>', ScheduleManager.changeStatus, name="change-status"),
     path('tasks/delete/<str:title>/<str:item_type>', ScheduleManager.delete, name="delete-task")
 ]

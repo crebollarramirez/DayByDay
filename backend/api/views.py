@@ -17,6 +17,9 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+    def post(self, request, *args, **kwargs):
+        print("New user created!")
+
 
 class TodosList(APIView):
     permission_classes = [IsAuthenticated]
@@ -36,5 +39,22 @@ class TodosList(APIView):
 
         # Call the ScheduleManager create method
         response = ScheduleManager.create(request)
-        return response
+        return Response(response)
+    
+class WeekList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+
+        return Response(ScheduleManager.getWeek(self.request))
+    
+class TodayList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+
+        response = ScheduleManager.getToday(request)
+        return Response(response)
         
