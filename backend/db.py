@@ -50,18 +50,17 @@ def create_dynamodb_table():
         table = dynamodb.create_table(
             TableName=table_name,
             KeySchema=[
-                {"AttributeName": "title", "KeyType": "HASH"},  # Partition key
-                {"AttributeName": "item_type", "KeyType": "RANGE"},  # Sort key
+                {"AttributeName": "id#item_type", "KeyType": "HASH"},  # Partition key
+                {"AttributeName": "id#title", "KeyType": "RANGE"},  # Sort key
             ],
             AttributeDefinitions=[
-                {"AttributeName": "title", "AttributeType": "S"},  # String type
-                {"AttributeName": "item_type", "AttributeType": "S"},  # String type
+                {"AttributeName": "id#item_type", "AttributeType": "S"},  # String type
+                {"AttributeName": "id#title", "AttributeType": "S"},  # String type
             ],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
         )
 
         # Wait until the table is created
-        table.wait_until_exists()
         print(f"Table {table_name} created successfully.")
 
     except ClientError as e:
@@ -103,165 +102,23 @@ def show():
             print()
 
 def addDummyData():
-    Item1 = {
-        "item_type": "FREQUENT",
-        "title": "Morning Walk",
-        "content": "Take the dog for a morning walk.",
-        "frequency": "MONDAY",
-        "completed": False,
-        "timeFrame": ("7:00AM", "8:00AM")
-    }
-
-    Item2 = {
-        "item_type": "FREQUENT",
-        "title": "Team Check-In",
-        "content": "Have a quick check-in with the team.",
-        "frequency": "MONDAY",
-        "completed": False,
-        "timeFrame": ("11:00AM", "11:30AM")
-    }
-
-    Item3 = {
-        "item_type": "FREQUENT",
-        "title": "Grocery Shopping",
-        "content": "Buy groceries for the week.",
-        "frequency": "TUESDAY",
-        "completed": False,
-        "timeFrame": ("10:00AM", "11:00AM")
-    }
-
-    Item4 = {
-        "item_type": "FREQUENT",
-        "title": "Yoga Class",
-        "content": "Attend a virtual yoga class.",
-        "frequency": "TUESDAY",
-        "completed": False,
-        "timeFrame": ("6:00PM", "7:00PM")
-    }
-
-    Item5 = {
-        "item_type": "FREQUENT",
-        "title": "Weekly Meeting",
-        "content": "Attend the project weekly meeting.",
-        "frequency": "WEDNESDAY",
-        "completed": False,
-        "timeFrame": ("2:00PM", "3:00PM")
-    }
-
-    Item6 = {
-        "item_type": "FREQUENT",
-        "title": "Water the Plants",
-        "content": "Water all the indoor plants.",
-        "frequency": "WEDNESDAY",
-        "completed": False,
-        "timeFrame": ("8:00AM", "8:30AM")
-    }
-
-    Item7 = {
-        "item_type": "FREQUENT",
-        "title": "Gym Session",
-        "content": "Workout at the gym after work.",
-        "frequency": "THURSDAY",
-        "completed": False,
-        "timeFrame": ("5:00PM", "6:30PM")
-    }
-
-    Item8 = {
-        "item_type": "FREQUENT",
-        "title": "Read a Book",
-        "content": "Read a chapter from a book.",
-        "frequency": "THURSDAY",
-        "completed": False,
-        "timeFrame": ("8:00PM", "9:00PM")
-    }
-
-    Item9 = {
-        "item_type": "FREQUENT",
-        "title": "Office Cleanup",
-        "content": "Organize and clean the office space.",
-        "frequency": "FRIDAY",
-        "completed": False,
-        "timeFrame": ("3:00PM", "4:00PM")
-    }
-
-    Item10 = {
-        "item_type": "FREQUENT",
-        "title": "Evening Workout",
-        "content": "Workout at the gym after work.",
-        "frequency": "FRIDAY",
-        "completed": False,
-        "timeFrame": ("5:00PM", "6:30PM")
-    }
-
-    Item11 = {
-        "item_type": "FREQUENT",
-        "title": "Family Time",
-        "content": "Spend quality time with the family.",
-        "frequency": "SATURDAY",
-        "completed": False,
-        "timeFrame": ("2:00PM", "4:00PM")
-    }
-
-    Item12 = {
-        "item_type": "FREQUENT",
-        "title": "Grocery Shopping",
-        "content": "Restock essential items for the week.",
-        "frequency": "SATURDAY",
-        "completed": False,
-        "timeFrame": ("10:00AM", "11:00AM")
-    }
-
-    Item13 = {
-        "item_type": "FREQUENT",
-        "title": "Meal Prep",
-        "content": "Prepare meals for the upcoming week.",
-        "frequency": "SUNDAY",
-        "completed": False,
-        "timeFrame": ("11:00AM", "1:00PM")
-    }
-
-    Item14 = {
-        "item_type": "FREQUENT",
-        "title": "Relaxation Time",
-        "content": "Take some time to relax and recharge.",
-        "frequency": "SUNDAY",
-        "completed": False,
-        "timeFrame": ("5:00PM", "7:00PM")
-    }
-
-    Item15 = {
-        "item_type": "FREQUENT",
-        "title": "Eat a carrot",
-        "content": "Eat about 2 of them",
-        "frequency": "EVERYDAY",
-        "completed": False,
-        "timeFrame": ("1:00AM", "2:00AM")
-    }
-
-
-    SampleTodo = {
-        "item_type": "TODO",
-        "title": "eat food",
-        "content": "eat food",
-        "completed": False,
-    }
-
-    table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
-    table.put_item(Item=Item1)
-    table.put_item(Item=Item2)
-    table.put_item(Item=Item3)
-    table.put_item(Item=Item4)
-    table.put_item(Item=Item5)
-    table.put_item(Item=Item6)
-    table.put_item(Item=Item7)
-    table.put_item(Item=Item8)
-    table.put_item(Item=Item9)
-    table.put_item(Item=Item10)
-    table.put_item(Item=Item11)
-    table.put_item(Item=Item12)
-    table.put_item(Item=Item13)
-    table.put_item(Item=Item14)
-    table.put_item(Item=SampleTodo)
+    pass
+    # table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
+    # table.put_item(Item=Item1)
+    # table.put_item(Item=Item2)
+    # table.put_item(Item=Item3)
+    # table.put_item(Item=Item4)
+    # table.put_item(Item=Item5)
+    # table.put_item(Item=Item6)
+    # table.put_item(Item=Item7)
+    # table.put_item(Item=Item8)
+    # table.put_item(Item=Item9)
+    # table.put_item(Item=Item10)
+    # table.put_item(Item=Item11)
+    # table.put_item(Item=Item12)
+    # table.put_item(Item=Item13)
+    # table.put_item(Item=Item14)
+    # table.put_item(Item=SampleTodo)
 
 
 # delete_table()

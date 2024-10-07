@@ -1,13 +1,13 @@
 import boto3
+import boto3.dynamodb
 from .models import *
 from django.http import JsonResponse
 import json
 from django.conf import settings
-from enum import Enum
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from datetime import datetime, timedelta
-import bcrypt
+from boto3.dynamodb.conditions import Key, Attr
 
 DAYS_OF_THE_WEEK = [
     "MONDAY",
@@ -19,9 +19,7 @@ DAYS_OF_THE_WEEK = [
     "SUNDAY",
 ]
 
-
 class ScheduleManager:
-
     # Private Class Member Variables
     __table = None
     __todos = {}
@@ -38,6 +36,9 @@ class ScheduleManager:
         "MONTHLY": {},
         "YEARLY": {},
     }
+
+    # key : id
+    # value dict that holds all the todos
     __tasks = {}
     __goals = {}
 
@@ -98,41 +99,47 @@ class ScheduleManager:
     def getData(cls) -> None:
         cls.__setTodayDate()
         cls.__set_table()
+
         try:
             response = cls.__table.scan()
             items = response.get("Items", [])
 
             for item in items:
-                item_type = item.get("item_type")
+                id, item_type = item.get("id#item_type").split('#')
+                id = str(id)
+                _ , title = item.get("id#title").split('#')
 
+                cls.__todos[id] = {}
                 if item_type == "TODO":
-                    cls.__todos[item["title"]] = Todo(
-                        title=item["title"],
-                        content=item["content"],
-                        completed=item.get("completed", False),
-                    )
-
-                elif item_type == "FREQUENT":
-                    cls.__frequentTasks[item["frequency"]][item["title"]] = (
-                        FrequentTask(
-                            title=item["title"],
+                    if id in cls.__todos:
+                        cls.__todos[id][title] = Todo(
+                            id=id,
+                            title=title,
                             content=item["content"],
-                            frequency=item["frequency"],
                             completed=item.get("completed", False),
-                            timeFrame=item.get("timeFrame"),
                         )
-                    )
-                elif item_type == "TASK":
-                    cls.__tasks[item["title"]] = Task(
-                        title=item["title"],
-                        content=item["content"],
-                        completed=item.get("completed", False),
-                        timeFrame=item.get("timeFrame"),
-                        date=item.get("date"),
-                    )
+
+                # elif item_type == "FREQUENT":
+                #     cls.__frequentTasks[item["frequency"]][title] = (
+                #         FrequentTask(
+                #             title=title,
+                #             content=item["content"],
+                #             frequency=item["frequency"],
+                #             completed=item.get("completed", False),
+                #             timeFrame=item.get("timeFrame"),
+                #         )
+                #     )
+                # elif item_type == "TASK":
+                #     cls.__tasks[title] = Task(
+                #         title=title,
+                #         content=item["content"],
+                #         completed=item.get("completed", False),
+                #         timeFrame=item.get("timeFrame"),
+                #         date=item.get("date"),
+                #     )
                 # elif item_type == "GOAL":
-                #     cls.__frequencyTasks[item["title"]] = Goal(
-                #         title=item["title"],
+                #     cls.__frequencyTasks[title] = Goal(
+                #         title=title,
                 #         content=item["content"],
                 #         completed=item.get("completed", False),
                 #         taskMap=item.get("tasksMap", {}),
@@ -162,15 +169,19 @@ class ScheduleManager:
         pass
 
     @classmethod
-    def getTodos(cls, request) -> JsonResponse:
+    def getTodos(cls, request) -> dict:
         if request.method == "GET":
+            user_id = str(request.user)
+            
+            userTodos = cls.__todos[user_id]
+
+
             # Create a list of dictionaries for each Todo object
             todos_dict_list = [
-                todo.to_dict() for todo in cls.__todos.values()
+                todo.to_dict() for todo in userTodos.values()
             ]  # Use to_dict()
-            return JsonResponse(
-                todos_dict_list, safe=False
-            )  # Return list of dicts as JSON response
+
+            return todos_dict_list
 
     def getGoals(cls, request) -> JsonResponse:
         if request.method == "GET":
@@ -180,27 +191,29 @@ class ScheduleManager:
     @csrf_exempt
     def create(cls, request) -> JsonResponse:
         if request.method == "POST":
-            data = json.loads(request.body)
+            data = request.data
             item_type = data.get("item_type")
+            user_id = str(request.user)
 
             if item_type == "TODO":
                 title = data.get("title")
                 content = data.get("content")
                 completed = data.get("completed")
+                id=user_id
                 if title in cls.__todos:
                     return JsonResponse(
                         {"error": "Todo item with this title already exists"},
                         status=400,
                     )
 
-                cls.__todos[title] = Todo(
-                    title=title, content=content, completed=completed
+                cls.__todos[user_id][title] = Todo(
+                    id=user_id, title=title, content=content, completed=completed
                 )
 
                 response = cls.__table.put_item(
                     Item={
-                        "item_type": "TODO",
-                        "title": title,
+                        "id#title": "#".join([id, title]),
+                        "id#item_type": "#".join([id, item_type]),
                         "content": content,
                         "completed": completed,
                     }

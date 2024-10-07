@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Todo
+from .models import *
 
 # Serializer validate username and password for us
 class UserSerializer(serializers.ModelSerializer):

@@ -24,17 +24,17 @@ class TodosList(APIView):
     def get(self, request, *args, **kwargs):
         # Retrieve the authenticated user
         user = self.request.user
-        user_id = user.id
+        print("This is the user is: " + str(user))
 
         # Assuming get_user_schedule is a method in your ScheduleManager
-        return ScheduleManager.getTodos(self.request, user_id)
-        
-    def perform_create(self, request):
-        user = request.user
-        user_id = user.id
-        title = request.data.get('title')
-        content = request.data.get('content')
-        completed = False
+        return Response(ScheduleManager.getTodos(self.request))
+    
+    def post(self, request, *args, **kwargs):
+        # Handle POST request here
+        user = self.request.user
+        print(f"Creating new task for user {user}")
 
-        ScheduleManager.create()
+        # Call the ScheduleManager create method
+        response = ScheduleManager.create(request)
+        return response
         

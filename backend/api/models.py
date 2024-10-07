@@ -4,12 +4,14 @@ frequency: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
 """
 from botocore.exceptions import ClientError
+import uuid
 
 # For todo list 
 class Todo():
     __ITEM_TYPE = 'TODO'
 
-    def __init__(self, title, content, completed) -> None:
+    def __init__(self, title, content, completed, id) -> None:
+        self.id:str = id
         self.title:str = title
         self.content: str = content
         self.completed: bool = completed
@@ -20,10 +22,11 @@ class Todo():
     def to_dict(self) -> dict:
         # Convert the object to a dictionary
         return {
+            'id': self.id,
             'title': self.title,
             'content': self.content,
             'completed': self.completed,
-            'item_type': self.getItemType()  # Include item type if needed
+            'item_type': self.__ITEM_TYPE  # Include item type if needed
         }
     
     def setCompleted(self, stat: bool):
