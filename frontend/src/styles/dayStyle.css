@@ -1,0 +1,17 @@
+.day-container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.events-container{
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(24, 60px); /* Each row is 1 hour (60px) */
+
+    height: 100%;
+    width: 100%;
+    background-color: #fff1f8;
+    border-radius: 0.7em;
+}

@@ -1,0 +1,25 @@
+.event-container{
+    display: flex;
+    border: black solid 2px;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    align-items: start;
+    justify-content: center;
+    grid-column: 1/-1;
+}
+
+.event-container h3{
+    font-size: 70%;
+
+}
+
+.event-container p{
+    font-size: 80%;
+}
+
+.event-item{
+    /* border: green solid 2px; */
+    margin: 0;
+    padding: 0;
+}

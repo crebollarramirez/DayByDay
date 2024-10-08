@@ -1,16 +1,17 @@
 import { CreateTodoBlock } from "../components/CreateTodoBlock";
 import Form from "../components/Form";
 import { TodosBox } from "../components/TodosBox";
-import React, {useState, useEffect} from "react"
+import React, { useState, useEffect } from "react";
 import api from "../api";
-import {Week} from '../components/Week/Week'
-import {Today} from '../components/Today'
+import { Week } from "../components/Week/Week";
+import { Today } from "../components/Today";
+import "./../styles/homeStyle.css";
 
 function Home() {
   const [todos, setTodos] = useState([]);
   useEffect(() => {
-  getTodos();
-  }, [])
+    getTodos();
+  }, []);
 
   const getTodos = () => {
     api
@@ -23,13 +24,16 @@ function Home() {
   };
 
   return (
-    <main>
-      <h1>this is the home page</h1>
-      <TodosBox getTodos={getTodos} todos={todos}/>
+    <div className="main-container">
+      <main>
+        <h1>this is the home page</h1>
+        <Week />
+        {/* <TodosBox getTodos={getTodos} todos={todos}/>
       <CreateTodoBlock getTodos={getTodos}/>
-      <Week />
-      <Today />
-    </main>
+
+      <Today /> */}
+      </main>
+    </div>
   );
 }
 

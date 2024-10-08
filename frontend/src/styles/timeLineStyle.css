@@ -1,0 +1,9 @@
+.timeLine-container{
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    align-items: center;
+    justify-content: start;
+    margin-top: 7.4em;
+    gap: 2.6em
+}

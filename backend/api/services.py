@@ -164,11 +164,13 @@ class ScheduleManager:
                 }
 
             for i in range(1, 7):
-                day = str((cls.__today[0] + timedelta(days=i)).strftime("%A")).upper()
+                day = str((cls.__today[0] + timedelta(days=i)).strftime("%A")) 
+                fullDay = day + ", " + str((cls.__today[0] + timedelta(days=i)).strftime("%B %d"))
+
                 if day not in week:
-                    week[day] = {}
+                    week[fullDay] = {}
                 for title, task in cls.__frequentTasks[user_id][day.upper()].items():
-                    week[day][title] = task.toDict()
+                    week[fullDay][title] = task.toDict()
 
             return week
 

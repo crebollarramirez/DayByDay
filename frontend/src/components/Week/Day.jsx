@@ -1,22 +1,25 @@
 import React from "react";
-import { Task } from "../Task";
+import "../../styles/dayStyle.css";
+import { Event } from "./Event";
 
-export function Day({ day, tasks, getWeek }) {
-    const isTasksEmpty = Object.keys(tasks).length === 0;
-
+export function Day({ day, events }) {
   return (
     <div className="day-container">
-        <h2>{day}</h2>
-        {
-            isTasksEmpty ? (
-                <p>No tasks for today</p>
-            ) : (
-                Object.entries(tasks).map(([taskKey, task]) => (
-                    <Task key={taskKey} task={task} getWeek={getWeek}/>
-              ))
-            )
-        }
-        
+      <h3>{day}</h3>
+      <div className="events-container">
+        {events && events.length > 0 ? (
+          events.map((event, index) => (
+            <Event 
+              key={index} 
+              title={event.title} 
+              content={event.content} 
+              timeFrame={event.timeFrame} 
+            />
+          ))
+        ) : (
+          <p>No events scheduled.</p> // Display a message if there are no events
+        )}
+      </div>
     </div>
   );
 }
