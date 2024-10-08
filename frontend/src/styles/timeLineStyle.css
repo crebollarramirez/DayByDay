@@ -1,9 +1,17 @@
 .timeLine-container{
-    display: flex;
-    flex-direction: column;
-    width: 30%;
-    align-items: center;
-    justify-content: start;
-    margin-top: 7.4em;
-    gap: 2.6em
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(24, 60px); /* Each row is 1 hour (60px) */
+    height: 100%;
+    width: 20%;
+
+    margin-top: 3.5em;
+    border: red solid 2px;
+    grid-column: 1/2;
+}
+
+.timeMarker{
+    border: blue solid 2px;
+    padding: 0;
+    margin: 0;
 }

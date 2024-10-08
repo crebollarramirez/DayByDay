@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/eventStyle.css";
 
-const parseTimeFrame = (timeFrame) => {
-  const [start, end] = timeFrame.split(" - ");
-  const startHour = parseInt(start.split(":")[0]);
-  const startMinute =
-    start.includes("PM") && startHour !== 12 ? startHour + 12 : startHour;
-  const endHour = parseInt(end.split(":")[0]);
-  const endMinute =
-    end.includes("PM") && endHour !== 12 ? endHour + 12 : endHour;
-
-  return {
-    startRow: startMinute === 0 ? startHour : startHour + 1, // Shift down if minutes are present
-    endRow: endMinute === 0 ? endHour : endHour + 1,
-  };
-};
-
 export function Event({ title, content, timeFrame }) {
+    const parseTimeFrame = (timeFrame) => {
+        const [startTime, endTime] = timeFrame.split(" - ");
+        
+        const startRow = convertToRow(startTime);
+        const endRow = convertToRow(endTime);
+        
+        return { startRow, endRow };
+      };
+      
+      // Helper function to convert time string to grid row
+      const convertToRow = (time) => {
+        const [timeString, period] = time.split(" ");
+        let [hour, minute] = timeString.split(":").map(Number);
+        
+        if (period === "PM" && hour !== 12) {
+          hour += 12; // Convert PM hour to 24-hour format
+        } else if (period === "AM" && hour === 12) {
+          hour = 0; // Convert 12 AM to 0 hours
+        }
+        
+        return hour + 1; // Convert 0-based index to 1-based grid row
+      };
+
+      
   const { startRow, endRow } = parseTimeFrame(timeFrame);
 
   return (
