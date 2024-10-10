@@ -2,6 +2,7 @@ import boto3
 import boto3.dynamodb
 from .models import *
 from django.http import JsonResponse
+from rest_framework.response import Response
 import json
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -214,7 +215,7 @@ class ScheduleManager:
 
     @classmethod
     @csrf_exempt
-    def create(cls, request) -> JsonResponse:
+    def create(cls, request) -> Response:
         if request.method == "POST":
             data = request.data
             item_type = data.get("item_type")
@@ -226,7 +227,7 @@ class ScheduleManager:
                 completed = data.get("completed")
                 id = user_id
                 if title in cls.__todos:
-                    return JsonResponse(
+                    return Response(
                         {"error": "Todo item with this title already exists"},
                         status=400,
                     )
@@ -251,7 +252,7 @@ class ScheduleManager:
                 timeFrame = data.get("timeFrame")
 
                 if title in cls.__frequentTasks:
-                    return JsonResponse(
+                    return Response(
                         {"error": "Frequent Task with this title already exists"},
                         status=400,
                     )
@@ -284,7 +285,7 @@ class ScheduleManager:
                 date = data.get("date")
 
                 if title in cls.__tasks:
-                    return JsonResponse(
+                    return Response(
                         {"error": "Task already exists"},
                         status=400,
                     )
@@ -308,16 +309,18 @@ class ScheduleManager:
                     }
                 )
 
-            return JsonResponse({"message": "Task Created", "data": data}, status=201)
+            return Response({"message": "Task Created", "data": data}, status=201)
 
     @classmethod
     @csrf_exempt
-    def delete(cls, request, title, item_type) -> JsonResponse:
+    def delete(cls, request, title, item_type) -> Response:
+        user_id = str(request.user)
+
         if request.method == "DELETE":
-            if item_type == "TODO" and title in cls.__todos:
-                cls.__table.delete_item(Key={"title": title, "item_type": item_type})
-                del cls.__todos[title]
-                return JsonResponse(
+            if item_type == "TODO" and title in cls.__todos[user_id]:
+                cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
+                del cls.__todos[user_id][title]
+                return Response(
                     {"message": "Todo deleted successfully."}, status=204
                 )
 
@@ -325,7 +328,7 @@ class ScheduleManager:
                 cls.__table.delete_item(Key={"title": title, "item_type": item_type})
                 del cls.__tasks[title]
                 cls.__resetWeek()
-                return JsonResponse(
+                return Response(
                     {"message": "Todo deleted successfully."}, status=204
                 )
 
@@ -338,7 +341,7 @@ class ScheduleManager:
                         break
 
                 cls.__resetWeek()
-                return JsonResponse(
+                return Response(
                     {"message": "Todo deleted successfully."}, status=204
                 )
 

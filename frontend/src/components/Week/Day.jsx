@@ -7,18 +7,16 @@ export function Day({ day, events }) {
     <div className="day-container">
       <h3>{day}</h3>
       <div className="events-container">
-        {events && events.length > 0 ? (
-          events.map((event, index) => (
-            <Event 
-              key={index} 
-              title={event.title} 
-              content={event.content} 
-              timeFrame={event.timeFrame} 
-            />
-          ))
-        ) : (
-          <p>No events scheduled.</p> // Display a message if there are no events
-        )}
+        {Object.entries(events).map(([title, eventData]) => (
+          <Event
+            key={title}
+            title={title}
+            content={eventData.content}
+            timeFrame={eventData.timeFrame}
+            isCompleted={eventData.isCompleted}
+          />
+
+        ))}
       </div>
     </div>
   );

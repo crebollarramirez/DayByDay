@@ -28,10 +28,10 @@ function Home() {
       <main>
         <h1>this is the home page</h1>
         <Week />
-        {/* <TodosBox getTodos={getTodos} todos={todos}/>
+        <TodosBox getTodos={getTodos} todos={todos}/>
       <CreateTodoBlock getTodos={getTodos}/>
 
-      <Today /> */}
+      <Today />
       </main>
     </div>
   );

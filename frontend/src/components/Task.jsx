@@ -40,10 +40,7 @@ export function Task({ taskKey, task, getWeek }) {
       </p>
       <p>Completed: {task.completed ? "Yes" : "No"}</p>
 
-      <button className="edit-button" onClick={() => setStatus(task)}>
-        {task.completed ? "Undo" : "Complete"}
-      </button>
-      <button onClick={() => onDelete(task.title, task.item_type)}>Delete!</button>
+
     </div>
   );
 }
