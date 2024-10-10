@@ -1,14 +1,18 @@
-import { CreateTodoBlock } from "../components/CreateTodoBlock";
+import { CreateMenu } from "../components/BottomViews/CreateMenu";
 import Form from "../components/Form";
-import { TodosBox } from "../components/TodosBox";
+import { TodosBox } from "../components/BottomViews/TodosBox";
 import React, { useState, useEffect } from "react";
 import api from "../api";
 import { Week } from "../components/Week/Week";
-import { Today } from "../components/Today";
+import { Today } from "../components/BottomViews/Today";
 import "./../styles/homeStyle.css";
+import { QuoteOfTheDay } from "../components/BottomViews/QuoteOfTheDay";
+import { Chat } from "../components/AIChat/Chat";
 
 function Home() {
   const [todos, setTodos] = useState([]);
+  const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false); // State for CreateMenu visibility
+
   useEffect(() => {
     getTodos();
   }, []);
@@ -23,15 +27,24 @@ function Home() {
       .catch((err) => alert(err));
   };
 
+  const toggleCreateMenu = () => {
+    setIsCreateMenuVisible(!isCreateMenuVisible); // Toggle visibility
+  };
+
+
   return (
     <div className="main-container">
       <main>
-        <h1>this is the home page</h1>
         <Week />
-        <TodosBox getTodos={getTodos} todos={todos}/>
-      <CreateTodoBlock getTodos={getTodos}/>
-
-      <Today />
+        <div className="bottomItems-container">
+          <div className="bottomView">
+            <Today toggleCreateMenu={toggleCreateMenu}/>
+            <TodosBox getTodos={getTodos} todos={todos} />
+            <QuoteOfTheDay />
+            {isCreateMenuVisible && <CreateMenu getTodos={getTodos} />}
+            <Chat />
+          </div>
+        </div>
       </main>
     </div>
   );

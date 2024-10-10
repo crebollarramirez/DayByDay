@@ -42,7 +42,7 @@ class TodosList(APIView):
 
         return response
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, *args, **kwargs) -> Response:
         user = str(self.request.user)
         
         print("we are delete a task for " + user)
@@ -50,12 +50,23 @@ class TodosList(APIView):
         print(kwargs)
 
         response = ScheduleManager.delete(request, kwargs['title'], kwargs['item_type'])
-        
+        return response
+    
+    def put(self, request, *args, **kwargs) -> Response:
+        user = str(self.request.user)
+        print("we are updating the task for " + user)
 
+        response = ScheduleManager.update(request, kwargs['title'], kwargs['item_type'])
         return response
 
-    
+class AllStatusChange(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def put(self, request, *args, **kwargs) -> Response:
+        user = str(self.request.user)
+
+        response = ScheduleManager.changeStatus(request, kwargs['title'], kwargs['item_type'])
+        return response
     
 class WeekList(APIView):
     permission_classes = [IsAuthenticated]

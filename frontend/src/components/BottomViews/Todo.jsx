@@ -1,5 +1,5 @@
 import react from "react";
-import api from "./../api";
+import api from "../../api";
 
 export function Todo({ todo, onDelete, onEdit, getTodos }) {
   const setStatus = async (todo) => {

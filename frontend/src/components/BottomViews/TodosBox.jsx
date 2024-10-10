@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import api from "../api";
+import api from "../../api";
 import { Todo } from "./Todo";
+import '../../styles/todosBoxStyle.css';
 
 export function TodosBox({getTodos, todos}) {
 
@@ -41,7 +42,7 @@ export function TodosBox({getTodos, todos}) {
   };
 
   return (
-    <div className="tasks-container">
+    <div className="todos-container">
       <h2>Todos</h2>
       {todos.map((todo) => (
         <Todo

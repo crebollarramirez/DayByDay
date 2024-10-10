@@ -1,9 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { TodosBox } from "./components/TodosBox";
-import api from "./api";
-import { CreateTodoBlock } from "./components/CreateTodoBlock";
-import { Week } from "./components/Week/Week";
-import { Today } from "./components/Today";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";

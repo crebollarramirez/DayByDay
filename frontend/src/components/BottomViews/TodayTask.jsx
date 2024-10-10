@@ -1,7 +1,9 @@
 import React from "react";
-import api from "../api";
+import api from "../../api";
+import "../../styles/todayTaskStyle.css"
 
-export function Task({ taskKey, task, getWeek }) {
+
+export function TodayTask({ taskKey, task, getWeek }) {
   const setStatus = async (task) => {
     try {
       const response = await api.put(
@@ -32,15 +34,18 @@ export function Task({ taskKey, task, getWeek }) {
     getWeek();
   }
   return (
+    
     <div key={taskKey} className="task">
-      <h3>{task.title}</h3>
-      <p>{task.content}</p>
+      <div className="titleWithDot">
+        <div className="ei_Dot"></div>
+        <h3>{task.title}</h3>
+      </div>
+
+      {/* <p>{task.content}</p> */}
       <p>
-        Time: {task.timeFrame[0]} - {task.timeFrame[1]}
+        {task.timeFrame[0]} - {task.timeFrame[1]}
       </p>
-      <p>Completed: {task.completed ? "Yes" : "No"}</p>
-
-
+      {/* <p>Completed: {task.completed ? "Yes" : "No"}</p> */}
     </div>
   );
 }

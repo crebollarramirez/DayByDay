@@ -1,0 +1,11 @@
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    padding: 1em;
+    width: 36em;
+    align-items: center;
+    justify-content: start;
+    gap: 1em;
+    height: 40em;
+    box-shadow: 0px 0px 35px -16px rgba(0, 0, 0, 0.75);
+  }

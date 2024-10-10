@@ -14,8 +14,26 @@ main-container{
 main{
     display: flex;
     height: 100%;
-    width: 100%;
-    border: black solid 2px;
     flex-direction: column;
     align-items: center;
+    gap: 1em;
+    border: green solid 2px;
+    margin: 0;
+    padding: 0;
+    
+}
+
+.bottomItems-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottomView{
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: start;
+    justify-content: center;
+    gap: 1em;
 }

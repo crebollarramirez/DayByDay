@@ -52,7 +52,7 @@ def create_dynamodb_table():
         table = dynamodb.create_table(
             TableName=table_name,
             KeySchema=[
-                {"AttributeName": "id#itme_type", "KeyType": "HASH"},  # Partition key
+                {"AttributeName": "id#item_type", "KeyType": "HASH"},  # Partition key
                 {"AttributeName": "id#title", "KeyType": "RANGE"},  # Sort key
             ],
             AttributeDefinitions=[

@@ -6,12 +6,10 @@
     width: 20%;
 
     margin-top: 3.5em;
-    border: red solid 2px;
     grid-column: 1/2;
 }
 
 .timeMarker{
-    border: blue solid 2px;
     padding: 0;
     margin: 0;
     text-align: right;

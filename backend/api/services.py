@@ -128,7 +128,6 @@ class ScheduleManager:
                         completed=item.get("completed", False),
                         timeFrame=item.get("timeFrame"),
                     )
-                    pass
                 elif item_type == "TASK":
                     cls.__tasks[title] = Task(
                         title=title,
@@ -173,6 +172,8 @@ class ScheduleManager:
                 for title, task in cls.__frequentTasks[user_id][day.upper()].items():
                     week[fullDay][title] = task.toDict()
 
+            print(cls.__frequentTasks)
+            print(week)
             return week
 
     # @classmethod
@@ -347,20 +348,21 @@ class ScheduleManager:
 
     @classmethod
     @csrf_exempt
-    def update(cls, request, title, item_type) -> JsonResponse:
+    def update(cls, request, title, item_type) -> Response:
+        user_id = str(request.user)
         if request.method == "PUT":
             if item_type == "TODO":
                 data = json.loads(request.body)
                 newData = data.get("newData")
                 response = cls.__table.update_item(
-                    Key={"title": title, "item_type": item_type},
+                    Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type},
                     UpdateExpression="set content = :c",
                     ExpressionAttributeValues={":c": newData},
                     ReturnValues="UPDATED_NEW",
                 )
 
-                cls.__todos[title].content = newData
-                return JsonResponse(
+                cls.__todos[user_id][title].content = newData
+                return Response(
                     {
                         "message": "Todo updated successfully",
                         "updated": response["Attributes"],
@@ -370,20 +372,20 @@ class ScheduleManager:
 
     @classmethod
     @csrf_exempt
-    def changeStatus(cls, request, title, item_type) -> JsonResponse:
+    def changeStatus(cls, request, title, item_type) -> Response:
+        user_id = str(request.user)
         if request.method == "PUT":
             if item_type == "TODO":
-                newStatus = json.loads(request.body)
-                newStatus = newStatus.get("completed")
+                newStatus = json.loads(request.body).get("completed")
                 response = cls.__table.update_item(
-                    Key={"title": title, "item_type": item_type},
+                    Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type},
                     UpdateExpression="set completed = :c",
                     ExpressionAttributeValues={":c": newStatus},
                     ReturnValues="UPDATED_NEW",
                 )
 
-                cls.__todos[title].completed = bool(newStatus)
-                return JsonResponse(
+                cls.__todos[user_id][title].completed = bool(newStatus)
+                return Response(
                     {
                         "message": "Todo status updated successfully",
                         "updated": response["Attributes"],
@@ -407,7 +409,7 @@ class ScheduleManager:
                             cls.__frequentTasks[day][title].completed
                         )
                         break
-                return JsonResponse(
+                return Response(
                     {
                         "message": "Todo status updated successfully",
                         "updated": response["Attributes"],
