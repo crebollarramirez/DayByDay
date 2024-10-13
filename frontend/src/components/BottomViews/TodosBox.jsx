@@ -7,6 +7,7 @@ export function TodosBox({getTodos, todos}) {
 
   // Function to delete a task
   const deleteTodo = async (title, item_type) => {
+
     try {
       const response = await api.delete(
         `api/todos/delete/${title}/${item_type}`

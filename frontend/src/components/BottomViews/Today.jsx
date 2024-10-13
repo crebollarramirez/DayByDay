@@ -8,9 +8,20 @@ export function Today({ toggleCreateMenu }) {
   const [today, setToday] = useState({});
   const [date, setDate] = useState("");
 
+  const formattedDate = () => {
+    const now = new Date();
+  
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based, so we add 1
+    const day = now.getDate().toString().padStart(2, '0');
+    const year = now.getFullYear();
+  
+    return `${month}-${day}-${year}`;
+  };
   const getToday = () => {
+    const todayDate = formattedDate();
+    
     api
-      .get("./api/today/list/")
+      .get(`./api/today/list/${todayDate}`)
       .then((res) => res.data)
       .then((data) => {
         setToday(data);
@@ -59,6 +70,7 @@ export function Today({ toggleCreateMenu }) {
     getToday();
     setDate(getFormattedDate());
   }, []);
+
   return (
     <div className="today-container">
       <div className="top-container today-item">

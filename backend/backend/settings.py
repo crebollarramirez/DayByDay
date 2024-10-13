@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv 
+import boto3
 import os
 
 load_dotenv()
@@ -33,6 +34,14 @@ AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_DYNAMODB_TABLE_NAME = os.getenv("AWS_DYNAMODB_TABLE_NAME")
 AWS_DYNAMODB_TABLE_NAME2 = os.getenv("AWS_DYNAMODB_TABLE_NAME2")
+
+TABLE = boto3.resource(
+            "dynamodb",
+            region_name=AWS_REGION_NAME,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            endpoint_url="http://localhost:8080",  # For local DynamoDB instance
+        ).Table(AWS_DYNAMODB_TABLE_NAME)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

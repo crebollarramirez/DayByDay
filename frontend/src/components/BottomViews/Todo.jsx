@@ -42,7 +42,7 @@ export function Todo({ todo, onDelete, onEdit, getTodos }) {
       >
         Edit
       </button>
-      <button className="edit-button" onClick={() => setStatus(todo)}>
+      <button className="statusChange-button" onClick={() => setStatus(todo)}>
         {todo.completed ? "Undo" : "Complete"}
       </button>
     </div>

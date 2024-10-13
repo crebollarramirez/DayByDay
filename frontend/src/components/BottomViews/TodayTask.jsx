@@ -4,6 +4,7 @@ import "../../styles/todayTaskStyle.css"
 
 
 export function TodayTask({ taskKey, task, getWeek }) {
+  
   const setStatus = async (task) => {
     try {
       const response = await api.put(

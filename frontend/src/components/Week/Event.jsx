@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/eventStyle.css";
+import api from '../../api'
 
-export function Event({ title, content, timeFrame, isCompleted }) {
-  const setStatus = async (task) => {
+export function Event({ title, content, timeFrame, isCompleted, item_type, getWeek}) {
+  const setStatus = async (title, item_type, isCompleted) => {
     try {
       const response = await api.put(
-        `api/all/status/${task.title}/${task.item_type}`,
-        { completed: !task.completed }
+        `api/all/status/${title}/${item_type}`,
+        { completed: !isCompleted }
       );
 
       if (response.status === 204) {
@@ -65,7 +66,11 @@ export function Event({ title, content, timeFrame, isCompleted }) {
           </p>
         </div>
         <p className="event-item">{content}</p>
-        <div className="buttons"></div>
+        <div className="buttons">
+          <button className=""  onClick={() => onDelete(title, item_type)}>&#x2715;</button>
+          <button>Edit</button>
+          <button className="check" onClick={() => {setStatus(title, item_type)}}>&#10003;</button>
+        </div>
       </div>
     </div>
   );

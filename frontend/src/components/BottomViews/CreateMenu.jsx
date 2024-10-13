@@ -8,34 +8,19 @@ export function CreateMenu({ getTodos }) {
   const [itemType, setItemType] = useState("TODO");
   const [scheduledDay, setScheduledDay] = useState("");
   const [frequency, setFrequency] = useState([]);
-  const [timeFrame, setTimeFrame] = useState({ from: "", to: "" });
-
-  // handle form submission logic here
-
-  // api
-  // .post("/api/todos/", item)
-  // .then((res) => {
-  //   if (res.status === 201) {
-  //     alert("Todo created!");
-  //     getTodos(); // Call getTasks here to update the task list
-  //   } else {
-  //     alert("Failed to make Todo.");
-  //   }
-  // })
-  // .catch((err) => alert(err));
+  const [timeFrame, setTimeFrame] = useState(["", ""]);
 
   const handleTimeFromChange = (e) => {
-    setTimeFrame((prevTimeFrame) => ({
-      ...prevTimeFrame,
-      from: e.target.value,
-    }));
+    setTimeFrame([e.target.value, timeFrame[1]]); // Set the "from" time (first element)
   };
 
   const handleTimeToChange = (e) => {
-    setTimeFrame((prevTimeFrame) => ({
-      ...prevTimeFrame,
-      to: e.target.value,
-    }));
+    setTimeFrame([timeFrame[0], e.target.value]); // Set the "to" time (second element)
+  };
+
+  const formatDate = (date) => {
+    const [year, month, day] = date.split("-"); // Split into components
+    return `${month}-${day}-${year}`
   };
 
   const handleFrequencyChange = (e) => {
@@ -97,18 +82,30 @@ export function CreateMenu({ getTodos }) {
         item_type: item_type,
         completed: false,
         timeFrame: timeFrame,
-        date: scheduledDay,
+        date: formatDate(scheduledDay),
       };
     }
 
     // Log the item for debugging
     console.log(item);
     console.log(frequency);
-    setTimeFrame({ from: "", to: "" });
     setFrequency([]);
     setScheduledDay("");
 
     // Form submission logic...
+    api
+      .post("/api/tasks/", item)
+      .then((res) => {
+        if (res.status === 201) {
+          alert("Task created!");
+          getTodos(); // Call getTasks here to update the task list
+        } else {
+          alert("Failed to make Todo.");
+        }
+      })
+      .catch((err) => alert(err));
+
+    getTodos();
   };
 
   return (
@@ -169,6 +166,7 @@ export function CreateMenu({ getTodos }) {
                   name="scheduledDay"
                   value={scheduledDay}
                   onChange={(e) => setScheduledDay(e.target.value)}
+                  required
                 />
               </>
             )}
@@ -203,6 +201,7 @@ export function CreateMenu({ getTodos }) {
                   value={frequency}
                   onChange={(e) => handleFrequencyChange(e)}
                   multiple
+                  required
                 >
                   <option value="Monday">Monday</option>
                   <option value="Tuesday">Tuesday</option>

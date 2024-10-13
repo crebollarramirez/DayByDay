@@ -39,7 +39,6 @@ function Home() {
           <div className="bottomView">
             <Today toggleCreateMenu={toggleCreateMenu} />
             <TodosBox getTodos={getTodos} todos={todos} />
-
             {isCreateMenuVisible ? (
               <CreateMenu getTodos={getTodos} />
             ) : (

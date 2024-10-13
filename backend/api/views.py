@@ -32,22 +32,20 @@ class TodosList(APIView):
         # Assuming get_user_schedule is a method in your ScheduleManager
         return Response(ScheduleManager.getTodos(self.request))
     
-    def post(self, request, *args, **kwargs) -> Response:
-        user = self.request.user
-        # Handle POST request here
-        print(f"Creating new task for user {user}")
+    # def post(self, request, *args, **kwargs) -> Response:
+    #     user = self.request.user
+    #     # Handle POST request here
+    #     print(f"Creating new task for user {user}")
 
-        # Call the ScheduleManager create method
-        response = ScheduleManager.create(request)
+    #     # Call the ScheduleManager create method
+    #     response = ScheduleManager.create(request)
 
-        return response
+    #     return response
 
     def delete(self, request, *args, **kwargs) -> Response:
         user = str(self.request.user)
         
         print("we are delete a task for " + user)
-        print(args)
-        print(kwargs)
 
         response = ScheduleManager.delete(request, kwargs['title'], kwargs['item_type'])
         return response
@@ -71,10 +69,22 @@ class AllStatusChange(APIView):
 class WeekList(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs) -> Response:    
+        print(kwargs['date'])
+
         user = self.request.user
 
-        return Response(ScheduleManager.getWeek(self.request))
+        return Response(ScheduleManager.getWeek(self.request, kwargs['date']))
+    
+    def delete(self, request, *args, **kwargs):
+        user = str(self.request.user)
+        
+        print("we are delete a task for " + user)
+        return ScheduleManager.delete(request, kwargs['title'], kwargs['item_type'])
+    
+    def post(self, request, *args, **kwargs) -> Response:
+        return ScheduleManager.create(request)
+    
     
 class TodayList(APIView):
     permission_classes = [IsAuthenticated]
@@ -82,6 +92,6 @@ class TodayList(APIView):
     def get(self, request, *args, **kwargs):
         user = self.request.user
 
-        response = ScheduleManager.getToday(request)
+        response = ScheduleManager.getToday(request, kwargs['todayDate'])
         return Response(response)
         

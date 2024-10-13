@@ -57,8 +57,6 @@ class FrequentTask:
             'timeFrame': self.timeFrame
         }
     
-    # def __repr__(self) -> dict:
-    #     return self.toDict()
 
 class Task:
     __ITEM_TYPE = "TASK"

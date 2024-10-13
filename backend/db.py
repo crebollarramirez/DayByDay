@@ -243,6 +243,15 @@ def addDummyData():
         "timeFrame": ("01:00", "02:00"),
     }
 
+    Item16 = {
+        "id#item_type": "chris#TASK",
+        "id#title": "chris#Go to work",
+        "content": "Move boxes",
+        "completed": False,
+        "date": "10-14-2024",
+        "timeFrame": ("05:00", "09:00"),
+    }
+
     table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
     table.put_item(Item=Item1)
     table.put_item(Item=Item2)
@@ -259,6 +268,7 @@ def addDummyData():
     table.put_item(Item=Item13)
     table.put_item(Item=Item14)
     table.put_item(Item=Item15)
+    table.put_item(Item=Item16)
 
 
 # Initialize the parser
