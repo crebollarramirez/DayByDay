@@ -18,7 +18,6 @@ DAYS_OF_THE_WEEK = [
     "SUNDAY",
 ]
 
-
 class ScheduleManager:
     # Private Class Member Variables
     __table = None
@@ -33,7 +32,6 @@ class ScheduleManager:
     @classmethod
     def __set_table(cls) -> None:
         cls.__table = settings.TABLE
-
 
     # this works well
     @classmethod
@@ -125,8 +123,6 @@ class ScheduleManager:
                         "MONTHLY": {},
                         "YEARLY": {},
                     }
-                
-
             if user_id not in cls.__tasks:
                 cls.__tasks[user_id] = {}
 
@@ -149,9 +145,11 @@ class ScheduleManager:
 
     @classmethod
     def getToday(cls, request, date) -> dict:
-        today = datetime.strptime(date, "%m-%d-%Y").date()
-        dayName = today.strftime("%A").upper()
+        date = datetime.strptime(date, "%m-%d-%Y").date()
+        dayName = date.strftime("%A").upper()
+        date = date.strftime("%m-%d-%Y")
 
+        print(date)
 
         if request.method == "GET":
             today = {}
@@ -159,7 +157,12 @@ class ScheduleManager:
             user_id = str(request.user)
             for title,task in cls.__frequentTasks[user_id][dayName].items():
                 today[title] = task.toDict()
-
+            
+            print(str(date))
+            if str(date) in cls.__tasks[user_id]:
+                for title, task in cls.__tasks[user_id][date].items():
+                    today[title] = task.toDict()
+            
             return today
 
     @classmethod
@@ -305,18 +308,23 @@ class ScheduleManager:
                     {"message": "Todo deleted successfully."}, status=204
                 )
 
-            elif item_type == "TASK" and title in cls.__tasks:
+            elif item_type == "TASK":
                 cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
-                del cls.__tasks[user_id][title]
-                cls.__resetWeek()
+
+                
+                for dateDict in cls.__tasks[user_id].values():
+                    if title in dateDict:
+                        del dateDict[title]
+                        break;
+
+                    
                 return Response(
                     {"message": "Todo deleted successfully."}, status=204
-                )
+                )   
 
             elif item_type == "FREQUENT":
                 cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
 
-                print(cls.__frequentTasks[user_id])
                 for frequent in cls.__frequentTasks[user_id].keys():
                     if title in cls.__frequentTasks[user_id][frequent]:
                         del cls.__frequentTasks[user_id][frequent][title]

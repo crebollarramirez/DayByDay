@@ -17,9 +17,10 @@ export function Today({ toggleCreateMenu }) {
   
     return `${month}-${day}-${year}`;
   };
+  
   const getToday = () => {
     const todayDate = formattedDate();
-    
+
     api
       .get(`./api/today/list/${todayDate}`)
       .then((res) => res.data)

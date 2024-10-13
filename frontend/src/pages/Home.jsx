@@ -18,7 +18,7 @@ function Home() {
   }, []);
 
   const getTodos = () => {
-    api
+    api 
       .get("./api/todos/")
       .then((res) => res.data)
       .then((data) => {
