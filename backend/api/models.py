@@ -39,7 +39,7 @@ class FrequentTask:
     def __init__(self, title, content, frequency, completed, timeFrame) -> None:
         self.title: str = title
         self.content: str = content
-        self.frequency: str = frequency
+        self.frequency: list = frequency
         self.completed: bool = completed
         self.timeFrame: tuple = timeFrame
 

@@ -31,17 +31,20 @@ function Home() {
     setIsCreateMenuVisible(!isCreateMenuVisible); // Toggle visibility
   };
 
-
   return (
     <div className="main-container">
       <main>
         <Week />
         <div className="bottomItems-container">
           <div className="bottomView">
-            <Today toggleCreateMenu={toggleCreateMenu}/>
+            <Today toggleCreateMenu={toggleCreateMenu} />
             <TodosBox getTodos={getTodos} todos={todos} />
-            <QuoteOfTheDay />
-            {isCreateMenuVisible && <CreateMenu getTodos={getTodos} />}
+
+            {isCreateMenuVisible ? (
+              <CreateMenu getTodos={getTodos} />
+            ) : (
+              <QuoteOfTheDay />
+            )}
             <Chat />
           </div>
         </div>
