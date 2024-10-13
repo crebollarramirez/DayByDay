@@ -248,7 +248,7 @@ def addDummyData():
         "id#title": "chris#Go to work",
         "content": "Move boxes",
         "completed": False,
-        "date": "10-14-2024",
+        "date": "10-15-2024",
         "timeFrame": ("05:00", "09:00"),
     }
 

@@ -18,6 +18,7 @@ DAYS_OF_THE_WEEK = [
     "SUNDAY",
 ]
 
+
 class ScheduleManager:
     # Private Class Member Variables
     __table = None
@@ -111,34 +112,42 @@ class ScheduleManager:
 
             if user_id not in cls.__frequentTasks:
                 cls.__frequentTasks[user_id] = {
-                        "MONDAY": {},
-                        "TUESDAY": {},
-                        "WEDNESDAY": {},
-                        "THURSDAY": {},
-                        "FRIDAY": {},
-                        "SATURDAY": {},
-                        "SUNDAY": {},
-                        "EVERYDAY": {},
-                        "BIWEEKLY": {},
-                        "MONTHLY": {},
-                        "YEARLY": {},
-                    }
+                    "MONDAY": {},
+                    "TUESDAY": {},
+                    "WEDNESDAY": {},
+                    "THURSDAY": {},
+                    "FRIDAY": {},
+                    "SATURDAY": {},
+                    "SUNDAY": {},
+                    "EVERYDAY": {},
+                    "BIWEEKLY": {},
+                    "MONTHLY": {},
+                    "YEARLY": {},
+                }
             if user_id not in cls.__tasks:
                 cls.__tasks[user_id] = {}
 
             week = {}
             for i in range(1, 7):
-                dayName = str((START_DAY + timedelta(days=i)).strftime("%A"))  # getting the name of the day of the week from the date
-                fullDay = dayName + ", " + str((START_DAY + timedelta(days=i)).strftime("%B %d")) # full Day name for the day
+                dayName = str(
+                    (START_DAY + timedelta(days=i)).strftime("%A")
+                )  # getting the name of the day of the week from the date
+                fullDay = (
+                    dayName
+                    + ", "
+                    + str((START_DAY + timedelta(days=i)).strftime("%B %d"))
+                )  # full Day name for the day
                 d = str((START_DAY + timedelta(days=i)).strftime("%m-%d-%Y"))
 
                 if dayName not in week:
                     week[fullDay] = {}
 
-                for title, task in cls.__frequentTasks[user_id][dayName.upper()].items():
+                for title, task in cls.__frequentTasks[user_id][
+                    dayName.upper()
+                ].items():
                     week[fullDay][title] = task.toDict()
 
-                if d in cls.__tasks[user_id]:                 
+                if d in cls.__tasks[user_id]:
                     for title, task in cls.__tasks[user_id][d].items():
                         week[fullDay][title] = task.toDict()
             return week
@@ -155,14 +164,14 @@ class ScheduleManager:
             today = {}
 
             user_id = str(request.user)
-            for title,task in cls.__frequentTasks[user_id][dayName].items():
+            for title, task in cls.__frequentTasks[user_id][dayName].items():
                 today[title] = task.toDict()
-            
+
             print(str(date))
             if str(date) in cls.__tasks[user_id]:
                 for title, task in cls.__tasks[user_id][date].items():
                     today[title] = task.toDict()
-            
+
             return today
 
     @classmethod
@@ -198,7 +207,6 @@ class ScheduleManager:
         if request.method == "POST":
             data = request.data
             item_type = data.get("item_type")
-            
 
             if item_type == "TODO":
                 title = data.get("title")
@@ -225,38 +233,38 @@ class ScheduleManager:
             elif item_type == "FREQUENT":
                 title = data.get("title")
                 content = data.get("content")
-                frequency = data.get("frequency")
+                frequency = list(data.get("frequency"))
                 completed = data.get("completed")
                 timeFrame = data.get("timeFrame")
 
-                if title in cls.__frequentTasks:
-                    return Response(
-                        {"error": "Frequent Task with this title already exists"},
-                        status=400,
-                    )
+                for freq in frequency:
+                    if title in cls.__frequentTasks[user_id][freq]:
+                        return Response(
+                            {"error": "Frequent Task with this title already exists"},
+                            status=400,
+                        )
 
-                
                 # remember to change to support 2d dict
 
                 for freq in frequency:
                     cls.__frequentTasks[user_id][freq.upper()][title] = FrequentTask(
                         title=title,
                         content=content,
-                        frequency=frequency,
+                        frequency=freq,
                         completed=completed,
                         timeFrame=timeFrame,
                     )
 
-                response = cls.__table.put_item(
-                    Item={
-                        "id#title": "#".join([user_id, title]),
-                        "id#item_type": "#".join([user_id, item_type]),
-                        "content": content,
-                        "frequency": frequency,
-                        "completed": completed,
-                        "timeFrame": timeFrame,
-                    }
-                )
+                    response = cls.__table.put_item(
+                        Item={
+                            "id#title": "#".join([user_id, title]),
+                            "id#item_type": "#".join([user_id, item_type]),
+                            "content": content,
+                            "frequency": freq,
+                            "completed": completed,
+                            "timeFrame": timeFrame,
+                        }
+                    )
 
             elif item_type == "TASK":
                 title = data.get("title")
@@ -270,7 +278,7 @@ class ScheduleManager:
                         {"error": "Task already exists"},
                         status=400,
                     )
-                
+
                 if date not in cls.__tasks[user_id]:
                     cls.__tasks[user_id][date] = {}
 
@@ -289,7 +297,7 @@ class ScheduleManager:
                         "content": content,
                         "completed": completed,
                         "timeFrame": timeFrame,
-                        "date": date
+                        "date": date,
                     }
                 )
 
@@ -302,28 +310,37 @@ class ScheduleManager:
 
         if request.method == "DELETE":
             if item_type == "TODO" and title in cls.__todos[user_id]:
-                cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
-                del cls.__todos[user_id][title]
-                return Response(
-                    {"message": "Todo deleted successfully."}, status=204
+                cls.__table.delete_item(
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    }
                 )
+                del cls.__todos[user_id][title]
+                return Response({"message": "Todo deleted successfully."}, status=204)
 
             elif item_type == "TASK":
-                cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
+                cls.__table.delete_item(
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    }
+                )
 
-                
                 for dateDict in cls.__tasks[user_id].values():
                     if title in dateDict:
                         del dateDict[title]
-                        break;
+                        break
 
-                    
-                return Response(
-                    {"message": "Todo deleted successfully."}, status=204
-                )   
+                return Response({"message": "Todo deleted successfully."}, status=204)
 
             elif item_type == "FREQUENT":
-                cls.__table.delete_item(Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type})
+                cls.__table.delete_item(
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    }
+                )
 
                 for frequent in cls.__frequentTasks[user_id].keys():
                     if title in cls.__frequentTasks[user_id][frequent]:
@@ -331,9 +348,7 @@ class ScheduleManager:
                         break
 
                 cls.__resetWeek()
-                return Response(
-                    {"message": "Todo deleted successfully."}, status=204
-                )
+                return Response({"message": "Todo deleted successfully."}, status=204)
 
     @classmethod
     @csrf_exempt
@@ -344,7 +359,10 @@ class ScheduleManager:
                 data = json.loads(request.body)
                 newData = data.get("newData")
                 response = cls.__table.update_item(
-                    Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type},
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    },
                     UpdateExpression="set content = :c",
                     ExpressionAttributeValues={":c": newData},
                     ReturnValues="UPDATED_NEW",
@@ -367,7 +385,10 @@ class ScheduleManager:
             if item_type == "TODO":
                 newStatus = json.loads(request.body).get("completed")
                 response = cls.__table.update_item(
-                    Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type},
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    },
                     UpdateExpression="set completed = :c",
                     ExpressionAttributeValues={":c": newStatus},
                     ReturnValues="UPDATED_NEW",
@@ -382,11 +403,14 @@ class ScheduleManager:
                     status=204,
                 )
 
-            if item_type == "FREQUENT":
+            elif item_type == "FREQUENT":
                 newStatus = json.loads(request.body)
                 newStatus = newStatus.get("completed")
                 response = cls.__table.update_item(
-                    Key={"id#title": user_id + "#" + title, "id#item_type": user_id + "#" + item_type},
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    },
                     UpdateExpression="set completed = :c",
                     ExpressionAttributeValues={":c": newStatus},
                     ReturnValues="UPDATED_NEW",
@@ -394,11 +418,10 @@ class ScheduleManager:
 
                 for frequent in cls.__frequentTasks[user_id].keys():
                     if title in cls.__frequentTasks[user_id][frequent]:
-                        cls.__frequentTasks[user_id][frequent][title].completed = not(
+                        cls.__frequentTasks[user_id][frequent][title].completed = not (
                             cls.__frequentTasks[user_id][frequent][title].completed
                         )
                         break
-
 
                 return Response(
                     {
@@ -407,7 +430,33 @@ class ScheduleManager:
                     },
                     status=204,
                 )
-            
+            elif item_type == "TASK":
+                newStatus = json.loads(request.body)
+                newStatus = newStatus.get("completed")
+                response = cls.__table.update_item(
+                    Key={
+                        "id#title": user_id + "#" + title,
+                        "id#item_type": user_id + "#" + item_type,
+                    },
+                    UpdateExpression="set completed = :c",
+                    ExpressionAttributeValues={":c": newStatus},
+                    ReturnValues="UPDATED_NEW",
+                )
+
+                print("this is running")
+                for day in cls.__tasks[user_id].keys():
+                    if title in cls.__tasks[user_id][day]:
+                        cls.__tasks[user_id][day][title].completed = not (
+                            cls.__tasks[user_id][day][title].completed
+                        )
+                return Response(
+                    {
+                        "message": "Todo status updated successfully",
+                        "updated": response["Attributes"],
+                    },
+                    status=204,
+                )
+
     """
     Check if two tasks overlap based on their time frames.
 
@@ -415,20 +464,21 @@ class ScheduleManager:
     :param task2: Second task (FrequentTask or Task)
     :return: True if the time frames overlap, False otherwise
     """
+
     def time_frame_overlap(task1, task2) -> bool:
 
         start1, end1 = task1.timeFrame
         start2, end2 = task2.timeFrame
-        
+
         # Convert military time to minutes since midnight for comparison
         def military_to_minutes(military_time):
-            hours, minutes = map(int, military_time.split(':'))
+            hours, minutes = map(int, military_time.split(":"))
             return hours * 60 + minutes
-        
+
         start1_minutes = military_to_minutes(start1)
         end1_minutes = military_to_minutes(end1)
         start2_minutes = military_to_minutes(start2)
         end2_minutes = military_to_minutes(end2)
-        
+
         # Check for overlap
         return not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes)

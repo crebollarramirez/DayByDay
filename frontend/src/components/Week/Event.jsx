@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/eventStyle.css";
-import api from '../../api'
+import api from '../../api';
 
-export function Event({ title, content, timeFrame, isCompleted, item_type, getWeek}) {
-  const setStatus = async (title, item_type, isCompleted) => {
+export function Event({ event, getWeek }) {
+  // Add local state to manage completed status
+  const [isCompleted, setIsCompleted] = useState(event.completed);
+
+  const setStatus = async (event) => {
     try {
       const response = await api.put(
-        `api/all/status/${title}/${item_type}`,
+        `api/all/status/${event.title}/${event.item_type}`,
         { completed: !isCompleted }
       );
 
       if (response.status === 204) {
+        setIsCompleted(!isCompleted); // Update local state
         console.log("Todo was completed or undo successfully");
       } else {
         console.error("failed");
@@ -21,10 +25,10 @@ export function Event({ title, content, timeFrame, isCompleted, item_type, getWe
     getWeek();
   };
 
-  const onDelete = async (title, item_type) => {
+  const onDelete = async (event) => {
     try {
       const response = await api.delete(
-        `api/tasks/delete/${title}/${item_type}`
+        `api/tasks/delete/${event.title}/${event.item_type}`
       );
     } catch (error) {
       console.log("Failed to delete the task");
@@ -49,7 +53,7 @@ export function Event({ title, content, timeFrame, isCompleted, item_type, getWe
     return hour + 1; // Convert 0-based index to 1-based grid row
   };
 
-  const { startRow, endRow } = parseTimeFrame(timeFrame);
+  const { startRow, endRow } = parseTimeFrame(event.timeFrame);
 
   return (
     <div
@@ -60,16 +64,27 @@ export function Event({ title, content, timeFrame, isCompleted, item_type, getWe
     >
       <div className="event">
         <div className="heading">
-          <h3 className="event-item">{title} </h3>
+          {/* Conditionally apply the line-through style */}
+          <h3
+            className="event-item"
+            style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+          >
+            {event.title}
+          </h3>
           <p className="event-item">
-            {timeFrame[0]} - {timeFrame[1]}
+            {event.timeFrame[0]} - {event.timeFrame[1]}
           </p>
         </div>
-        <p className="event-item">{content}</p>
+        <p
+          className="event-item"
+          style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+        >
+          {event.content}
+        </p>
         <div className="buttons">
-          <button className=""  onClick={() => onDelete(title, item_type)}>&#x2715;</button>
+          <button className="" onClick={() => onDelete(event)}>&#x2715;</button>
           <button>Edit</button>
-          <button className="check" onClick={() => {setStatus(title, item_type)}}>&#10003;</button>
+          <button className="check" onClick={() => setStatus(event)}>&#10003;</button>
         </div>
       </div>
     </div>

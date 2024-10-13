@@ -10,11 +10,7 @@ export function Day({ day, events, getWeek }) {
         {Object.entries(events).map(([title, eventData]) => (
           <Event
             key={title}
-            title={title}
-            content={eventData.content}
-            timeFrame={eventData.timeFrame}
-            isCompleted={eventData.isCompleted}
-            item_type={eventData.item_type}
+            event={eventData}
             getWeek={getWeek}
           />
 
