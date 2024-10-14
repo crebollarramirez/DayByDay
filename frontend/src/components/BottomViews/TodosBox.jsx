@@ -6,11 +6,10 @@ import '../../styles/todosBoxStyle.css';
 export function TodosBox({getTodos, todos}) {
 
   // Function to delete a task
-  const deleteTodo = async (title, item_type) => {
-
+  const deleteTodo = async (item_id, item_type) => {
     try {
       const response = await api.delete(
-        `api/todos/delete/${title}/${item_type}`
+        `api/todos/delete/${item_id}/${item_type}`
       );
 
       if (response.status === 204) {
@@ -25,9 +24,9 @@ export function TodosBox({getTodos, todos}) {
     getTodos();
   };
 
-  const editTodo = async (title, item_type, newData = "edited") => {
+  const editTodo = async (item_id, item_type, newData = "edited") => {
     try {
-      const response = await api.put(`api/todos/edit/${title}/${item_type}`, {
+      const response = await api.put(`api/todos/edit/${item_id}/${item_type}`, {
         newData,
       });
 

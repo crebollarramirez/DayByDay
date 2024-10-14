@@ -31,17 +31,6 @@ export function CreateMenu({ getTodos }) {
     setFrequency(selectedOptions); // Set the selected options as an array
   };
 
-  const createTodo = (e) => {
-    const toDoInfo = {
-      title: content,
-      content: content,
-      item_type: "TODO",
-      completed: false,
-    };
-
-    e.preventDefault();
-  };
-
   const onSubmit = (e) => {
     e.preventDefault();
 
@@ -88,9 +77,8 @@ export function CreateMenu({ getTodos }) {
 
     // Log the item for debugging
     console.log(item);
-    console.log(frequency);
-    setFrequency([]);
-    setScheduledDay("");
+    // setFrequency([]);
+    // setScheduledDay("");
 
     // Form submission logic...
     api

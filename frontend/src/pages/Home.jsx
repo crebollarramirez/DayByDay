@@ -23,8 +23,10 @@ function Home() {
       .then((res) => res.data)
       .then((data) => {
         setTodos(data);
+        console.log(data)
       })
       .catch((err) => alert(err));
+      
   };
 
   const toggleCreateMenu = () => {

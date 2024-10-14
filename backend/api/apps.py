@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from .services import *
+from .services import ScheduleManager
 import os
 
 

@@ -26,9 +26,10 @@ export function Event({ event, getWeek }) {
   };
 
   const onDelete = async (event) => {
+    console.log(event)
     try {
       const response = await api.delete(
-        `api/tasks/delete/${event.title}/${event.item_type}`
+        `api/tasks/delete/${event.item_id}/${event.item_type}`
       );
     } catch (error) {
       console.log("Failed to delete the task");

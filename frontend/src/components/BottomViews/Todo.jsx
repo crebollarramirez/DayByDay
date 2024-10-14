@@ -5,7 +5,7 @@ export function Todo({ todo, onDelete, onEdit, getTodos }) {
   const setStatus = async (todo) => {
     try {
       const response = await api.put(
-        `api/all/status/${todo.title}/${todo.item_type}`,
+        `api/all/status/${todo.item_id}/${todo.item_type}`,
         { completed: !todo.completed }
       );
 
@@ -32,13 +32,13 @@ export function Todo({ todo, onDelete, onEdit, getTodos }) {
 
       <button
         className="delete-button"
-        onClick={() => onDelete(todo.title, todo.item_type)}
+        onClick={() => onDelete(todo.item_id, todo.item_type)}
       >
         Delete
       </button>
       <button
         className="edit-button"
-        onClick={() => onEdit(todo.title, todo.item_type)}
+        onClick={() => onEdit(todo.item_id, todo.item_type)}
       >
         Edit
       </button>

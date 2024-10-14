@@ -47,14 +47,14 @@ class TodosList(APIView):
         
         print("we are delete a task for " + user)
 
-        response = ScheduleManager.delete(request, kwargs['title'], kwargs['item_type'])
+        response = ScheduleManager.delete(request, kwargs['item_id'], kwargs['item_type'])
         return response
     
     def put(self, request, *args, **kwargs) -> Response:
         user = str(self.request.user)
         print("we are updating the task for " + user)
 
-        response = ScheduleManager.update(request, kwargs['title'], kwargs['item_type'])
+        response = ScheduleManager.update(request, kwargs['item_id'], kwargs['item_type'])
         return response
 
 class AllStatusChange(APIView):
@@ -63,7 +63,7 @@ class AllStatusChange(APIView):
     def put(self, request, *args, **kwargs) -> Response:
         user = str(self.request.user)
 
-        response = ScheduleManager.changeStatus(request, kwargs['title'], kwargs['item_type'])
+        response = ScheduleManager.changeStatus(request, kwargs['item_id'], kwargs['item_type'])
         return response
     
 class WeekList(APIView):
@@ -80,7 +80,7 @@ class WeekList(APIView):
         user = str(self.request.user)
         
         print("we are delete a task for " + user)
-        return ScheduleManager.delete(request, kwargs['title'], kwargs['item_type'])
+        return ScheduleManager.delete(request, kwargs['item_id'], kwargs['item_type'])
     
     def post(self, request, *args, **kwargs) -> Response:
         return ScheduleManager.create(request)
