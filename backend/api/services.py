@@ -13,7 +13,6 @@ class ScheduleManager:
 
     @classmethod
     def getData(cls) -> None:
-
         try:
             response = cls.__table.scan()
             items = response.get("Items", [])
@@ -39,8 +38,9 @@ class ScheduleManager:
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
                     frequency = item.get("frequency")
+                    endFrequency = item.get("endFrequency")
                     freqTask = FrequentTask(
-                        item_id, title, content, frequency, isCompleted, timeFrame
+                        item_id, title, content, frequency, isCompleted, timeFrame, endFrequency
                     )
                     cls.__users[user_id].add_frequentTask(freqTask)
 
@@ -49,7 +49,7 @@ class ScheduleManager:
                     timeFrame = item.get("timeFrame")
                     date = item.get("date")
                     task = Task(user_id, title, content, isCompleted, timeFrame, date)
-                    cls.__users[user_id].add_task(task)
+                    cls.__users[user_id].add_task_from_db(task)
 
         except Exception as e:
             print(f"Error with fetching calendar data: {e}")
@@ -58,7 +58,6 @@ class ScheduleManager:
     def getWeek(cls, request, date) -> dict:
         if request.method == "GET":
             user_id = str(request.user)
-
 
             if user_id not in cls.__users:
                 cls.__users[user_id] = UserData(user_id)
@@ -136,7 +135,7 @@ class ScheduleManager:
                 date=date,
             )
 
-            if cls.__users[user_id].create(task):
+            if cls.__users[user_id].create_task(task):
                 response = cls.__table.put_item(
                     Item={
                         "user#item_type": "#".join([user_id, item_type]),
@@ -170,9 +169,9 @@ class ScheduleManager:
                         "content": content,
                         "completed": completed,
                         "timeFrame": timeFrame,
-                        "date": date,
                         "title": title,
                         "endFrequency": endFrequency,
+                        "frequency": frequency
                     }
                 )
             else:
@@ -215,6 +214,8 @@ class ScheduleManager:
                 return Response({"message": "Todo deleted successfully."}, status=204)
 
             elif item_type == "FREQUENT":
+                cls.__users[user_id].delete_frequentTask(item_id)
+
                 cls.__table.delete_item(
                     Key={
                         "user#item_type": "#".join([user_id, item_type]),
@@ -222,7 +223,6 @@ class ScheduleManager:
                     }
                 )
 
-                cls.__resetWeek()
                 return Response({"message": "Todo deleted successfully."}, status=204)
 
     @classmethod
@@ -230,9 +230,9 @@ class ScheduleManager:
         user_id = str(request.user)
         if request.method == "PUT":
             data = json.loads(request.body)
+            content = data.get("content")
             if item_type == "TODO":
-                newData = data.get("newData")
-                cls.__users[user_id].update_todo(item_id, newData)
+                cls.__users[user_id].update_todo(item_id, content)
 
                 response = cls.__table.update_item(
                     Key={
@@ -240,7 +240,7 @@ class ScheduleManager:
                         "user#item_type": user_id + "#" + item_type,
                     },
                     UpdateExpression="set content = :c",
-                    ExpressionAttributeValues={":c": newData},
+                    ExpressionAttributeValues={":c": content},
                     ReturnValues="UPDATED_NEW",
                 )
 
@@ -252,6 +252,40 @@ class ScheduleManager:
                     status=204,
                 )
 
+            elif item_type == "TASK":
+                title = data.get("title")
+                timeFrame = data.get("timeFrame")
+                date = data.get("date")
+
+                cls.__users[user_id].update_task(item_id, title=title, content=content, timeFrame=timeFrame,date=date)
+                response = cls.__table.update_item(
+                    Key={
+                        "user#item_id": user_id + "#" + item_id,
+                        "user#item_type": user_id + "#" + item_type,
+                    },
+                    UpdateExpression="SET title = :t, content = :c, timeFrame = :tf, #d = :d",
+                    ExpressionAttributeValues={
+                        ":t": title,
+                        ":c": content,
+                        ":tf": timeFrame,
+                        ":d": date,
+                    },
+                    ExpressionAttributeNames={
+                        "#d": "date"  # 'date' is a reserved keyword in DynamoDB, so you need to use ExpressionAttributeNames to avoid conflicts
+                    },
+                    ReturnValues="UPDATED_NEW",
+                )
+            elif item_type == "FREQUENT":
+                title = data.get("title")
+                frequency = data.get("frequency")
+                timeFrame = data.get("timeFrame")
+                endFrequency = data.get("endFrequency")
+
+                cls.__users[user_id].update_frequentTask(item_id)
+
+
+
+                
     @classmethod
     def changeStatus(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
@@ -317,5 +351,3 @@ class ScheduleManager:
                     },
                     status=204,
                 )
-
-    

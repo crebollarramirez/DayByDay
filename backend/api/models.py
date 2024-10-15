@@ -1,78 +1,180 @@
-"""
-frequency: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
-
-EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
-"""
-
 from datetime import datetime, timedelta
 import uuid
 
+"""
+Represents a to-do list item with attributes for content and completion status.
 
-# For todo list
+Attributes:
+    item_id (str): A unique identifier for the to-do item.
+    content (str): The content or description of the to-do item.
+    completed (bool): A flag indicating whether the to-do item is completed.
+"""
+
+
 class Todo:
+
     __ITEM_TYPE = "TODO"
 
+    """
+    Initializes a Todo object.
+
+    Args:
+        item_id (str): A unique identifier for the to-do item.
+        content (str): The content or description of the to-do item.
+        completed (bool): Indicates whether the to-do item is completed.
+    """
+
     def __init__(self, item_id, content, completed) -> None:
+
         self.item_id = item_id
-        self.content: str = content
-        self.completed: bool = completed
+        self.content = content
+        self.completed = completed
+
+    """
+    Returns the type of the to-do item.
+    
+    Returns:
+        str: The item type (always "TODO").
+    """
 
     def getItemType(self) -> str:
+
         return self.__ITEM_TYPE
 
+    """
+    Converts the Todo object into a dictionary.
+    
+    Returns:
+        dict: A dictionary representation of the Todo object.
+    """
+
     def to_dict(self) -> dict:
-        # Convert the object to a dictionary
+
         return {
             "item_id": self.item_id,
             "content": self.content,
             "completed": self.completed,
-            "item_type": self.__ITEM_TYPE,  # Include item type if needed
+            "item_type": self.__ITEM_TYPE,
         }
+
+    """
+    Updates the content and/or completed status of the to-do item.
+    
+    Args:
+        isCompleted (bool, optional): New completion status of the to-do item.
+        content (str, optional): New content for the to-do item.
+    
+    Returns:
+        bool: True after successfully updating the object.
+    """
 
     def update(self, isCompleted=None, content=None) -> bool:
         self.content = content if content is not None else self.content
         self.completed = isCompleted if isCompleted is not None else self.completed
-
         return True
 
 
+"""
+Represents a task with attributes such as title, content, completion status, time frame, and date. 
+It also supports linking to other tasks.
+
+Attributes:
+    item_id (str): A unique identifier for the task.
+    title (str): The title or name of the task.
+    content (str): The content or description of the task.
+    completed (bool): A flag indicating whether the task is completed.
+    timeFrame (tuple): A tuple representing the time frame for the task.
+    date (str): The date associated with the task.
+    linked (str, optional): An optional linked task identifier, if any.
+"""
+
+
 class Task:
+
     __ITEM_TYPE = "TASK"
 
+    """
+    Initializes a Task object.
+
+    Args:
+        item_id (str): A unique identifier for the task.
+        title (str): The title or name of the task.
+        content (str): The content or description of the task.
+        completed (bool): The completion status of the task.
+        timeFrame (tuple): The time frame within which the task occurs.
+        date (str): The date for the task.
+        parent (str, optional): An optional task that this task is a child to.
+    """
+
     def __init__(
-        self, item_id, title, content, completed, timeFrame, date, linked=None
+        self, item_id, title, content, completed, timeFrame, date, parent=None
     ) -> None:
+
         self.item_id = item_id
-        self.title: str = title
-        self.content: str = content
-        self.completed: bool = completed
-        self.timeFrame: tuple = timeFrame
-        self.date: str = date
-        self.linked: str = linked
+        self.title = title
+        self.content = content
+        self.completed = completed
+        self.timeFrame = timeFrame
+        self.date = date
+        self.parent:str = parent
+
+    """
+    Returns the type of the task, which is always "TASK".
+
+    Returns:
+        str: The item type (always "TASK").
+    """
 
     def getItemType(self) -> str:
+
         return self.__ITEM_TYPE
 
-    def setCompleted(self, stat: bool):
-        self.completed = stat
+    """
+    Converts the Task object into a dictionary.
+
+    Returns:
+        dict: A dictionary representation of the Task object, including title, content,
+                completion status, item type, time frame, date, and item ID.
+    """
 
     def toDict(self) -> dict:
         return {
             "title": self.title,
             "content": self.content,
             "completed": self.completed,
-            "item_type": self.getItemType(),  # Include item type if needed
+            "item_type": self.__ITEM_TYPE,
             "timeFrame": self.timeFrame,
             "date": self.date,
             "item_id": self.item_id,
+            "parent": self.parent
         }
 
-    def update(self, isCompleted, title, content, timeFrame, date):
+    """
+    Updates the attributes of the task. Only non-None values will update the respective attributes.
+
+    Args:
+        isCompleted (bool, optional): New completion status of the task.
+        title (str, optional): New title for the task.
+        content (str, optional): New content for the task.
+        timeFrame (tuple, optional): New time frame for the task.
+        date (str, optional): New date for the task.
+    """
+
+    def update(
+        self, isCompleted=None, title=None, content=None, timeFrame=None, date=None
+    ) -> None:
         self.title = title if title is not None else self.title
         self.content = content if content is not None else self.content
         self.timeFrame = timeFrame if timeFrame is not None else self.timeFrame
         self.date = date if date is not None else self.date
         self.completed = isCompleted if isCompleted is not None else self.completed
+
+    """
+    Unlinks the task from any other linked task.
+    """
+
+    def unlink(self) -> None:
+        self.parent = None
 
 
 class FrequentTask:
@@ -88,6 +190,7 @@ class FrequentTask:
         self.completed: bool = completed
         self.timeFrame: tuple = timeFrame
         self.endFrequency: str = endFrequency
+        self.children: list[str] = []
 
     def getItemType(self) -> str:
         return self.__ITEM_TYPE
@@ -99,14 +202,15 @@ class FrequentTask:
             "content": self.content,
             "frequency": self.frequency,
             "completed": self.completed,
-            "item_type": self.getItemType(),  # Include item type if needed
+            "item_type": self.__ITEM_TYPE,  # Include item type if needed
             "timeFrame": self.timeFrame,
             "item_id": self.item_id,
-            "endFrequency": self.endFrequency
+            "endFrequency": self.endFrequency,
+            "chidren": self.children
         }
 
     def generate(self, date) -> Task:
-        newID = uuid.uuid4
+        newID = str(uuid.uuid4)
         return Task(
             item_id=newID,
             title=self.title,
@@ -114,8 +218,30 @@ class FrequentTask:
             completed=False,
             timeFrame=self.timeFrame,
             date=date,
-            linked=self.item_id,
+            parent=self.item_id,
         )
+
+    def update(
+        self,
+        allTasks,
+        isCompleted=None,
+        title=None,
+        content=None,
+        timeFrame=None,
+        endFrequency=None,
+        frequency=None,
+    ) -> None:
+        self.title = title if title is not None else self.title
+        self.content = content if content is not None else self.content
+        self.timeFrame = timeFrame if timeFrame is not None else self.timeFrame
+        self.completed = isCompleted if isCompleted is not None else self.completed
+        self.endFrequency = (
+            endFrequency if endFrequency is not None else self.endFrequency
+        )
+        self.frequency = frequency if frequency is not None else self.frequency
+
+        for item_id in self.children:
+            allTasks[item_id].update(title=title, content=content, timeFrame=timeFrame)
 
 
 class Goal:
@@ -180,7 +306,10 @@ class UserData:
             "YEARLY": {},
         }
 
-        self.__tasks = {}
+        self.__allFrequentTasks = {}
+
+        self.__tasks: dict[str, Task] = {}
+        self.__allTasks = {}
 
     """
         ALL TODOS METHODS
@@ -224,19 +353,45 @@ class UserData:
     """
 
     def add_frequentTask(self, freqTask: FrequentTask) -> bool:
+        for freq in freqTask.frequency:
+            if freqTask.item_id in self.__frequentTasks[freq.upper()]:
+                return False
 
-        # if it already exists in our dictionary, means that we are trying to add an existing element
-        if freqTask.title in self.__frequentTasks[freqTask.frequency.upper()]:
-            return False
+        for freq in freqTask.frequency:
+            self.__frequentTasks[freq.upper()][freqTask.item_id] = freqTask
 
-        self.__frequentTasks[freqTask.frequency.upper()][freqTask.title] = freqTask
         return True
+
+    def delete_frequentTask(self, item_id) -> bool:
+        for day in self.__frequentTasks:
+            if item_id in day:
+                del day[item_id]
+                return True
+
+        return False
+
+    def update_frequentTask(
+        self,
+        item_id,
+        title=None,
+        content=None,
+        frequency=None,
+        timeFrame=None,
+        endFrequency=None,
+    ) -> None:
+        self.__allFrequentTasks[item_id].update(self.__allTasks,
+            title=title,
+            content=content,
+            timeFrame=timeFrame,
+            frequency=frequency,
+            endFrequency=endFrequency,
+        )
 
     """
         ALL TASKS METHODS
     """
 
-    def add_task(self, task: Task) -> bool:
+    def add_task_from_db(self, task: Task) -> bool:
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
 
@@ -246,9 +401,10 @@ class UserData:
         else:
             self.__tasks[task.date][task.item_id] = task
 
+        self.__allTasks[task.item_id] = task
         return True
 
-    def create(self, task: Task) -> bool:
+    def create_task(self, task: Task) -> bool:
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
 
@@ -262,6 +418,7 @@ class UserData:
                 return False
 
         self.__tasks[task.date][task.item_id] = task
+        self.__allTasks[task.item_id] = task
         return True
 
     def delete_task(self, item_id) -> bool:
@@ -270,6 +427,7 @@ class UserData:
                 del dic[item_id]
                 return True
 
+        del self.__allTasks[item_id]
         return False
 
     def update_task(
@@ -281,11 +439,10 @@ class UserData:
         timeFrame=None,
         date=None,
     ) -> bool:
-        for dic in self.__tasks.values():
-            if item_id in dic:
-                dic[item_id].update(isCompleted, title, content, timeFrame, date)
-                return True
-
+        
+        if item_id in self.__allTasks:
+            self.__allTasks[item_id].update(isCompleted, title, content, timeFrame, date)
+            return True
         return False
 
     """
@@ -294,6 +451,12 @@ class UserData:
 
     def get_user_id(self):
         return self.__user_id
+
+    def __checkIfDuplicate(self, newTask, d) -> bool:
+        for task in self.__tasks[d].values():
+            if task.parent is not None and newTask.parent == task.parent:
+                return True
+        return False
 
     def getWeek(self, date) -> dict:
         week = {}
@@ -310,10 +473,15 @@ class UserData:
             if dayName not in week:
                 week[fullDay] = {}
 
-            # for task in self.__frequentTasks[dayName.upper()].values():
-            #     self.__frequentTasks.generate()
+            if len(self.__frequentTasks[dayName.upper()]) != 0:
+                for freqTask in self.__frequentTasks[dayName.upper()].values():
+                    newTask = freqTask.generate(d)
 
-            # for freq in self.__frequentTasks:
+                    if (
+                        d in self.__tasks and not (self.__checkIfDuplicate(newTask, d))
+                    ) or d not in self.__tasks:
+                        self.add_task_from_db(newTask)
+
             if d in self.__tasks:
                 for item_id, task in self.__tasks[d].items():
                     week[fullDay][item_id] = task.toDict()
