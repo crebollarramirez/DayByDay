@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import *
+from django.core.exceptions import ValidationError
 
-# Serializer validate username and password for us
 class UserSerializer(serializers.ModelSerializer):
     class Meta: 
         model = User
@@ -10,10 +9,20 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password']  # Automatically hashes the password
+        )
         return user
-    
-class TodoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Todo
-        fields = ['title', 'content', 'completed', 'item_type']
+
+    def validate_username(self, value):
+        """Check that the username is unique."""
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
+
+    def validate_password(self, value):
+        """Ensure the password meets certain criteria (optional)."""
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        return value

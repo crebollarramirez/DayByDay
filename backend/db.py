@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError
 import argparse
-import bcrypt
 
 load_dotenv()
 
@@ -32,7 +31,8 @@ def delete_table():
     table.delete()
     print(f"Deleting table {AWS_DYNAMODB_TABLE_NAME}...")
 
-    # Wait until the table is deleted
+    # Wait until the table is delete
+
     while True:
         try:
             table.wait_until_not_exists()
@@ -114,9 +114,29 @@ def addDummyData():
         "content": "Take the dog for a morning walk.",
         "completed": False,
     }
-
+    Item2 = {
+        "user#item_type": "testuser#TODO",
+        "user#item_id": "testuser#asdfsd77Faddsf",
+        "content": "Take the dog outside.",
+        "completed": False,
+    }
+    Item3 = {
+        "user#item_type": "testuser_1#TODO",
+        "user#item_id": "testuser_1#asdfsd77Faddsf",
+        "content": "Take the dog outside.",
+        "completed": False,
+    }
+    Item4 = {
+        "user#item_type": "testuser_2#TODO",
+        "user#item_id": "testuser_2#asdfsd77Faddsf",
+        "content": "Take the dog outside.",
+        "completed": False,
+    }
     table = dynamodb.Table(AWS_DYNAMODB_TABLE_NAME)
     table.put_item(Item=Item1)
+    table.put_item(Item=Item2)
+    table.put_item(Item=Item3)
+    table.put_item(Item=Item4)
 
 
 # Initialize the parser

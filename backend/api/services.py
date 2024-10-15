@@ -1,36 +1,16 @@
-from django.http import JsonResponse
 from rest_framework.response import Response
 import json
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from .models import Todo, FrequentTask, Task, Goal, UserData
 from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Key, Attr
 import uuid
 
-# from django.contrib.auth.models import User
-
-DAYS_OF_THE_WEEK = [
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-    "SUNDAY",
-]
-
-
 class ScheduleManager:
-
     __users: dict[str, UserData] = {}
     # Private Class Member Variables
     __table = settings.TABLE
 
-    # key : id
-    __goals = {}
-
-    # this works well
     @classmethod
     def getData(cls) -> None:
 
@@ -76,59 +56,13 @@ class ScheduleManager:
 
     @classmethod
     def getWeek(cls, request, date) -> dict:
-        # This will set up the date and START_DAY IS A CONSTANT AND SHOULD NOT BE CHANGED
-        # START_DAY = datetime.strptime(date, "%m-%d-%Y").date()
         if request.method == "GET":
             user_id = str(request.user)
 
-            # if user_id not in cls.__frequentTasks:
-            #     cls.__frequentTasks[user_id] = {
-            #         "MONDAY": {},
-            #         "TUESDAY": {},
-            #         "WEDNESDAY": {},
-            #         "THURSDAY": {},
-            #         "FRIDAY": {},
-            #         "SATURDAY": {},
-            #         "SUNDAY": {},
-            #         "EVERYDAY": {},
-            #         "BIWEEKLY": {},
-            #         "MONTHLY": {},
-            #         "YEARLY": {},
-            #     }
-            # if user_id not in cls.__tasks:
-            #     cls.__tasks[user_id] = {}
 
-            # week = {}
-            # for i in range(1, 7):
-            #     dayName = str(
-            #         (START_DAY + timedelta(days=i)).strftime("%A")
-            #     )  # getting the name of the day of the week from the date
-            #     fullDay = (
-            #         dayName
-            #         + ", "
-            #         + str((START_DAY + timedelta(days=i)).strftime("%B %d"))
-            #     )  # full Day name for the day
-            #     d = str((START_DAY + timedelta(days=i)).strftime("%m-%d-%Y"))
-
-            #     # adding day name in week
-            #     if dayName not in week:
-            #         week[fullDay] = {}
-
-            #     # Adding all tasks for that day into the week
-            #     for title, task in cls.__frequentTasks[user_id][
-            #         dayName.upper()
-            #     ].items():
-            #         week[fullDay][title] = task.toDict()
-
-            #     if len(cls.__frequentTasks[user_id]['EVERYDAY']) != 0:
-            #         for title, task in cls.__frequentTasks[user_id]['EVERYDAY'].items():
-            #             week[fullDay][title] = task.toDict()
-
-            #     if d in cls.__tasks[user_id]:
-            #         for title, task in cls.__tasks[user_id][d].items():
-            #             week[fullDay][title] = task.toDict()
-            # return week
-
+            if user_id not in cls.__users:
+                cls.__users[user_id] = UserData(user_id)
+                
         return cls.__users[user_id].getWeek(date=date)
 
     @classmethod
@@ -136,29 +70,11 @@ class ScheduleManager:
         if request.method == "GET":
             user_id = str(request.user)
 
+            if user_id not in cls.__users:
+                cls.__users[user_id] = UserData(user_id)
+
             return cls.__users[user_id].getToday(date)
 
-        # date = datetime.strptime(date, "%m-%d-%Y").date()
-        # dayName = date.strftime("%A").upper()
-        # date = date.strftime("%m-%d-%Y")
-
-        # print(date)
-
-        # if request.method == "GET":
-        #     today = {}
-
-        #     user_id = str(request.user)
-        #     for title, task in cls.__frequentTasks[user_id][dayName].items():
-        #         today[title] = task.toDict()
-
-        #     print(str(date))
-        #     if str(date) in cls.__tasks[user_id]:
-        #         for title, task in cls.__tasks[user_id][date].items():
-        #             today[title] = task.toDict()
-
-        #     if len(cls.__frequentTasks[user_id]["EVERYDAY"]) != 0:
-        #         for title, task in cls.__frequentTasks[user_id]["EVERYDAY"].items():
-        #             today[title] = task.toDict()
 
     @classmethod
     def getCustomizedWeek(cls):
@@ -168,115 +84,103 @@ class ScheduleManager:
     def getTodos(cls, request) -> dict:
         if request.method == "GET":
             user_id = str(request.user)
+
+            if user_id not in cls.__users:
+                cls.__users[user_id] = UserData(user_id)
+
             return cls.__users[user_id].getTodos()
 
-    def getGoals(cls, request) -> JsonResponse:
+    def getGoals(cls, request) -> None:
         if request.method == "GET":
             pass
 
     @classmethod
-    @csrf_exempt
     def create(cls, request) -> Response:
         user_id = str(request.user)
         print(user_id)
 
-        if request.method == "POST":
-            data = request.data
+        data = request.data
 
-            # ALL ITEMS HAVE THESE ATTRIBUTES
-            item_type = data.get("item_type")
+        # ALL ITEMS HAVE THESE ATTRIBUTES
+        item_type = data.get("item_type")
+        content = data.get("content")
+        completed = data.get("completed")
+        item_id = str(uuid.uuid4())
+
+        if item_type == "TODO":
+            cls.__users[user_id].add_todo(
+                Todo(item_id=item_id, content=content, completed=completed)
+            )
+
+            cls.__table.put_item(
+                Item={
+                    "user#item_type": "#".join([user_id, item_type]),
+                    "user#item_id": "#".join([user_id, item_id]),
+                    "content": content,
+                    "completed": completed,
+                }
+            )
+        elif item_type == "TASK":
+            title = data.get("title")
             content = data.get("content")
             completed = data.get("completed")
+            timeFrame = data.get("timeFrame")
+            date = data.get("date")
 
-            if item_type == "TODO":
-                item_id = str(uuid.uuid4())
-                cls.__users[user_id].add_todo(
-                    Todo(item_id=item_id, content=content, completed=completed)
-                )
+            task = Task(
+                item_id=item_id,
+                title=title,
+                content=content,
+                completed=completed,
+                timeFrame=timeFrame,
+                date=date,
+            )
 
+            if cls.__users[user_id].create(task):
                 response = cls.__table.put_item(
                     Item={
                         "user#item_type": "#".join([user_id, item_type]),
                         "user#item_id": "#".join([user_id, item_id]),
                         "content": content,
                         "completed": completed,
+                        "timeFrame": timeFrame,
+                        "date": date,
+                        "title": title,
                     }
                 )
-            # elif item_type == "FREQUENT":
-            #     title = data.get("title")
-            #     content = data.get("content")
-            #     frequency = list(data.get("frequency"))
-            #     completed = data.get("completed")
-            #     timeFrame = data.get("timeFrame")
+            else:
+                Response({"message": "Task was not created"}, status=400)
 
-            #     for freq in frequency:
-            #         if title in cls.__frequentTasks[user_id][freq]:
-            #             return Response(
-            #                 {"error": "Frequent Task with this title already exists"},
-            #                 status=400,
-            #             )
+        elif item_type == "FREQUENT":
+            title = data.get("title")
+            content = data.get("content")
+            frequency = list(data.get("frequency"))
+            completed = data.get("completed")
+            timeFrame = data.get("timeFrame")
+            endFrequency = data.get("endFrequency")
 
-            #     # remember to change to support 2d dict
 
-            #     for freq in frequency:
-            #         cls.__frequentTasks[user_id][freq.upper()][title] =
-
-            #         FrequentTask(
-            #             title=title,
-            #             content=content,
-            #             frequency=freq,
-            #             completed=completed,
-            #             timeFrame=timeFrame,
-            #         )
-
-            #         response = cls.__table.put_item(
-            #             Item={
-            #                 "id#title": "#".join([user_id, title]),
-            #                 "id#item_type": "#".join([user_id, item_type]),
-            #                 "content": content,
-            #                 "frequency": freq,
-            #                 "completed": completed,
-            #                 "timeFrame": timeFrame,
-            #             }
-            #         )
-
-            elif item_type == "TASK":
-                title = data.get("title")
-                content = data.get("content")
-                completed = data.get("completed")
-                timeFrame = data.get("timeFrame")
-                date = data.get("date")
-
-                item_id = str(uuid.uuid4())
-
-                task = Task(
-                    item_id=item_id,
-                    title=title,
-                    content=content,
-                    completed=completed,
-                    timeFrame=timeFrame,
-                    date=date,
+            freqTask = FrequentTask(item_id, title, content, frequency, completed, timeFrame, endFrequency)
+            
+            if cls.__users[user_id].add_frequentTask(freqTask):
+                response = cls.__table.put_item(
+                    Item={
+                        "user#item_type": "#".join([user_id, item_type]),
+                        "user#item_id": "#".join([user_id, item_id]),
+                        "content": content,
+                        "completed": completed,
+                        "timeFrame": timeFrame,
+                        "date": date,
+                        "title": title,
+                        "endFrequency": endFrequency,
+                    }
                 )
+            else:
+                Response({"message": "Task was not created"}, status=400)
 
-                if cls.__users[user_id].create(task):
-                    response = cls.__table.put_item(
-                        Item={
-                            "user#item_type": "#".join([user_id, item_type]),
-                            "user#item_id": "#".join([user_id, item_id]),
-                            "content": content,
-                            "completed": completed,
-                            "timeFrame": timeFrame,
-                            "date": date,
-                            "title": title,
-                        }
-                    )
-                else:
-                    Response({"message": "Task was not created"}, status=400)
-
-            return Response({"message": "Task Created", "data": data}, status=201)
+        return Response({"message": "Task Created", "data": data}, status=201)
 
     @classmethod
-    @csrf_exempt
     def delete(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
         if request.method == "DELETE":
@@ -322,7 +226,6 @@ class ScheduleManager:
                 return Response({"message": "Todo deleted successfully."}, status=204)
 
     @classmethod
-    @csrf_exempt
     def update(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
         if request.method == "PUT":
@@ -350,7 +253,6 @@ class ScheduleManager:
                 )
 
     @classmethod
-    @csrf_exempt
     def changeStatus(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
         if request.method == "PUT":

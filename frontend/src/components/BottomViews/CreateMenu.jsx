@@ -7,6 +7,7 @@ export function CreateMenu({ getTodos }) {
   const [content, setContent] = useState("");
   const [itemType, setItemType] = useState("TODO");
   const [scheduledDay, setScheduledDay] = useState("");
+  const [endDay, setEndDay] = useState("");
   const [frequency, setFrequency] = useState([]);
   const [timeFrame, setTimeFrame] = useState(["", ""]);
 
@@ -20,7 +21,7 @@ export function CreateMenu({ getTodos }) {
 
   const formatDate = (date) => {
     const [year, month, day] = date.split("-"); // Split into components
-    return `${month}-${day}-${year}`
+    return `${month}-${day}-${year}`;
   };
 
   const handleFrequencyChange = (e) => {
@@ -63,6 +64,8 @@ export function CreateMenu({ getTodos }) {
         completed: false,
         frequency: frequency, // Make sure frequency is included
         timeFrame: timeFrame,
+        endFrequency: endDay,
+        
       };
     } else if (item_type === "TASK") {
       item = {
@@ -203,6 +206,16 @@ export function CreateMenu({ getTodos }) {
                   <option value="Monthly">Monthly</option>
                   <option value="Yearly">Yearly</option>
                 </select>
+
+                <label htmlFor="endDay">Frequency End</label>
+                <input
+                  type="date"
+                  id="endDay"
+                  name="endDay"
+                  value={endDay}
+                  onChange={(e) => setEndDay(e.target.value)}
+                  required
+                />
               </>
             )}
           </>

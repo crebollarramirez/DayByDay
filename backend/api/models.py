@@ -5,6 +5,7 @@ EVERYDAY, BIWEEKLEY, MONTHLY, YEARLY
 """
 
 from datetime import datetime, timedelta
+import uuid
 
 
 # For todo list
@@ -28,7 +29,7 @@ class Todo:
             "item_type": self.__ITEM_TYPE,  # Include item type if needed
         }
 
-    def update(self, isCompleted, content=None) -> bool:
+    def update(self, isCompleted=None, content=None) -> bool:
         self.content = content if content is not None else self.content
         self.completed = isCompleted if isCompleted is not None else self.completed
 
@@ -38,13 +39,16 @@ class Todo:
 class Task:
     __ITEM_TYPE = "TASK"
 
-    def __init__(self, item_id, title, content, completed, timeFrame, date) -> None:
+    def __init__(
+        self, item_id, title, content, completed, timeFrame, date, linked=None
+    ) -> None:
         self.item_id = item_id
         self.title: str = title
         self.content: str = content
         self.completed: bool = completed
         self.timeFrame: tuple = timeFrame
         self.date: str = date
+        self.linked: str = linked
 
     def getItemType(self) -> str:
         return self.__ITEM_TYPE
@@ -75,7 +79,7 @@ class FrequentTask:
     __ITEM_TYPE = "FREQUENT"
 
     def __init__(
-        self, item_id, title, content, frequency, completed, timeFrame
+        self, item_id, title, content, frequency, completed, timeFrame, endFrequency
     ) -> None:
         self.item_id = item_id
         self.title: str = title
@@ -83,7 +87,7 @@ class FrequentTask:
         self.frequency: list = frequency
         self.completed: bool = completed
         self.timeFrame: tuple = timeFrame
-        # self.endFrequency: str = endFrequency
+        self.endFrequency: str = endFrequency
 
     def getItemType(self) -> str:
         return self.__ITEM_TYPE
@@ -97,15 +101,20 @@ class FrequentTask:
             "completed": self.completed,
             "item_type": self.getItemType(),  # Include item type if needed
             "timeFrame": self.timeFrame,
+            "item_id": self.item_id,
+            "endFrequency": self.endFrequency
         }
 
     def generate(self, date) -> Task:
+        newID = uuid.uuid4
         return Task(
+            item_id=newID,
             title=self.title,
             content=self.content,
             completed=False,
             timeFrame=self.timeFrame,
             date=date,
+            linked=self.item_id,
         )
 
 
@@ -238,7 +247,7 @@ class UserData:
             self.__tasks[task.date][task.item_id] = task
 
         return True
-    
+
     def create(self, task: Task) -> bool:
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
@@ -247,15 +256,13 @@ class UserData:
             self.__tasks[task.date] = {}
             self.__tasks[task.date][task.item_id] = task
             return True
-        
 
         for event in self.__tasks[task.date]:
             if self.time_frame_overlap(event, task):
                 return False
-            
+
         self.__tasks[task.date][task.item_id] = task
         return True
-    
 
     def delete_task(self, item_id) -> bool:
         for dic in self.__tasks.values():
@@ -315,8 +322,16 @@ class UserData:
     def getToday(self, date) -> dict:
         today = {}
 
+        date = datetime.strptime(date, "%m-%d-%Y").date()
+        dayName = date.strftime("%A").upper()
+        date = date.strftime("%m-%d-%Y")
+
+        if str(date) in self.__tasks:
+            for title, task in self.__tasks[date].items():
+                today[title] = task.toDict()
+
         return today
-    
+
     """
     Check if two tasks overlap based on their time frames.
 
@@ -342,4 +357,3 @@ class UserData:
 
         # Check for overlap
         return not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes)
-
