@@ -9,7 +9,7 @@ export function Event({ event, getWeek }) {
   const setStatus = async (event) => {
     try {
       const response = await api.put(
-        `api/all/status/${event.title}/${event.item_type}`,
+        `api/all/status/${event.item_id}/${event.item_type}`,
         { completed: !isCompleted }
       );
 

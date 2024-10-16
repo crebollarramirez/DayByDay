@@ -48,8 +48,8 @@ class ScheduleManager:
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
                     date = item.get("date")
-                    task = Task(user_id, title, content, isCompleted, timeFrame, date)
-                    cls.__users[user_id].add_task_from_db(task)
+                    task = Task(item_id, title, content, isCompleted, timeFrame, date)
+                    cls.__users[user_id].add_task(task, True)
 
         except Exception as e:
             print(f"Error with fetching calendar data: {e}")
@@ -135,7 +135,7 @@ class ScheduleManager:
                 date=date,
             )
 
-            if cls.__users[user_id].create_task(task):
+            if cls.__users[user_id].add_task(task):
                 response = cls.__table.put_item(
                     Item={
                         "user#item_type": "#".join([user_id, item_type]),
@@ -148,7 +148,7 @@ class ScheduleManager:
                     }
                 )
             else:
-                Response({"message": "Task was not created"}, status=400)
+                return Response({"message": "Task was not created"}, status=400)
 
         elif item_type == "FREQUENT":
             title = data.get("title")
@@ -182,6 +182,9 @@ class ScheduleManager:
     @classmethod
     def delete(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
+        print("user id: "+ user_id)
+        print("item type: " + item_type)
+        print("item id " + item_id )
         if request.method == "DELETE":
             if item_type == "TODO":
                 cls.__users[user_id].delete_todo(item_id)
@@ -289,6 +292,9 @@ class ScheduleManager:
     @classmethod
     def changeStatus(cls, request, item_id, item_type) -> Response:
         user_id = str(request.user)
+        print("user id: "+ user_id)
+        print("item type: " + item_type)
+        print("item id " + item_id )
         if request.method == "PUT":
             newStatus = bool(json.loads(request.body).get("completed"))
 
@@ -314,6 +320,7 @@ class ScheduleManager:
                 )
 
             elif item_type == "FREQUENT":
+
                 response = cls.__table.update_item(
                     Key={
                         "user#item_id": user_id + "#" + item_id,
@@ -332,7 +339,7 @@ class ScheduleManager:
                     status=204,
                 )
             elif item_type == "TASK":
-            
+                print("this is goinggggdgdg")
                 cls.__users[user_id].update_task(item_id, isCompleted=newStatus)
                 response = cls.__table.update_item(
                     Key={

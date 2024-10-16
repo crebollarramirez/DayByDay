@@ -243,7 +243,6 @@ class FrequentTask:
         for item_id in self.children:
             allTasks[item_id].update(title=title, content=content, timeFrame=timeFrame)
 
-
 class Goal:
     ITEM_TYPE = "GOAL"
 
@@ -305,23 +304,20 @@ class UserData:
             "MONTHLY": {},
             "YEARLY": {},
         }
-
-        self.__allFrequentTasks = {}
+        # self.__allFrequentTasks = {}
 
         self.__tasks: dict[str, Task] = {}
-        self.__allTasks = {}
+        # self.__allTasks = {}
 
     """
         ALL TODOS METHODS
     """
 
-    def add_todo(self, todo: Todo, addingToDB: bool = False) -> bool:
+    def add_todo(self, todo: Todo) -> bool:
         # if it already exists in our dictionary, means that we are trying to add an existing element
         if todo.item_id in self.__todos:
             return False
 
-        if addingToDB:
-            pass
         # We will be insert to the database here if its newData
 
         self.__todos[todo.item_id] = todo
@@ -360,6 +356,7 @@ class UserData:
         for freq in freqTask.frequency:
             self.__frequentTasks[freq.upper()][freqTask.item_id] = freqTask
 
+        # self.__allFrequentTasks[freqTask.item_id] = freqTask
         return True
 
     def delete_frequentTask(self, item_id) -> bool:
@@ -368,6 +365,7 @@ class UserData:
                 del day[item_id]
                 return True
 
+        # del self.__allFrequentTasks[item_id]
         return False
 
     def update_frequentTask(
@@ -379,7 +377,9 @@ class UserData:
         timeFrame=None,
         endFrequency=None,
     ) -> None:
-        self.__allFrequentTasks[item_id].update(self.__allTasks,
+        for freqTasks in self.__frequentTasks.values():
+            if item_id in freqTasks:
+               freqTasks[item_id].update(self.__allTasks,
             title=title,
             content=content,
             timeFrame=timeFrame,
@@ -391,20 +391,18 @@ class UserData:
         ALL TASKS METHODS
     """
 
-    def add_task_from_db(self, task: Task) -> bool:
-        if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
-            return False
+    def add_task(self, task: Task, fromDB=False) -> bool:
+        if fromDB: 
+            if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
+                return False
 
-        if task.date not in self.__tasks:
-            self.__tasks[task.date] = {}
-            self.__tasks[task.date][task.item_id] = task
-        else:
-            self.__tasks[task.date][task.item_id] = task
-
-        self.__allTasks[task.item_id] = task
-        return True
-
-    def create_task(self, task: Task) -> bool:
+            if task.date not in self.__tasks:
+                self.__tasks[task.date] = {}
+                self.__tasks[task.date][task.item_id] = task
+            else:
+                self.__tasks[task.date][task.item_id] = task
+            return True
+           
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
 
@@ -413,21 +411,23 @@ class UserData:
             self.__tasks[task.date][task.item_id] = task
             return True
 
-        for event in self.__tasks[task.date]:
+        for event in self.__tasks[task.date].values():
             if self.time_frame_overlap(event, task):
                 return False
 
         self.__tasks[task.date][task.item_id] = task
-        self.__allTasks[task.item_id] = task
+        # self.__allTasks[task.item_id] = task
         return True
 
     def delete_task(self, item_id) -> bool:
         for dic in self.__tasks.values():
             if item_id in dic:
+                if dic[item_id].parent is not None:
+                    pass # handle what happens to parent             
                 del dic[item_id]
                 return True
 
-        del self.__allTasks[item_id]
+        # del self.__allTasks[item_id]
         return False
 
     def update_task(
@@ -440,9 +440,23 @@ class UserData:
         date=None,
     ) -> bool:
         
-        if item_id in self.__allTasks:
-            self.__allTasks[item_id].update(isCompleted, title, content, timeFrame, date)
-            return True
+        print("this is the isCompleted value")
+        print(isCompleted)
+        print("these are all tasks: ")
+        # print(self.__allTasks)
+        print("og tasks: ")
+        print(self.__tasks)
+
+        for d in self.__tasks.values():
+            if item_id in d:
+                d[item_id].update(isCompleted=isCompleted, title=title, content=content, timeFrame=timeFrame, date=date)
+                print("this is runnign in the update")
+                return True
+        # if item_id in self.__allTasks:
+        #     print("ITS HERE")
+        #     self.__allTasks[item_id]
+        #     print("it changes")
+        #     return True
         return False
 
     """
@@ -473,14 +487,14 @@ class UserData:
             if dayName not in week:
                 week[fullDay] = {}
 
-            if len(self.__frequentTasks[dayName.upper()]) != 0:
-                for freqTask in self.__frequentTasks[dayName.upper()].values():
-                    newTask = freqTask.generate(d)
+            # if len(self.__frequentTasks[dayName.upper()]) != 0:
+            #     for freqTask in self.__frequentTasks[dayName.upper()].values():
+            #         newTask = freqTask.generate(d)
 
-                    if (
-                        d in self.__tasks and not (self.__checkIfDuplicate(newTask, d))
-                    ) or d not in self.__tasks:
-                        self.add_task_from_db(newTask)
+            #         if (
+            #             d in self.__tasks and not (self.__checkIfDuplicate(newTask, d))
+            #         ) or d not in self.__tasks:
+            #             self.add_task(newTask)
 
             if d in self.__tasks:
                 for item_id, task in self.__tasks[d].items():
@@ -508,7 +522,7 @@ class UserData:
     :return: True if the time frames overlap, False otherwise
     """
 
-    def time_frame_overlap(task1, task2) -> bool:
+    def time_frame_overlap(self, task1, task2) -> bool:
 
         start1, end1 = task1.timeFrame
         start2, end2 = task2.timeFrame
