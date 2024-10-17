@@ -346,11 +346,11 @@ class UserData:
 
         return True
 
-    def update_todo(self, item_id, isCompleted):
+    def update_todo(self, item_id, isCompleted=None, content=None):
         if item_id not in self.__todos:
             return False
 
-        self.__todos[item_id].update(isCompleted)
+        self.__todos[item_id].update(isCompleted=isCompleted, content=content)
 
     """
         ALL FREQUENT TASK METHODS

@@ -260,16 +260,17 @@ class ScheduleManager:
         if request.method == "PUT":
             data = json.loads(request.body)
             content = data.get("content")
+            completed = data.get("completed")
             if item_type == "TODO":
-                cls.__users[user_id].update_todo(item_id, content)
+                cls.__users[user_id].update_todo(item_id, isCompleted=completed, content=content)
 
                 response = cls.__table.update_item(
                     Key={
                         "user#item_id": user_id + "#" + item_id,
                         "user#item_type": user_id + "#" + item_type,
                     },
-                    UpdateExpression="set content = :c",
-                    ExpressionAttributeValues={":c": content},
+                    UpdateExpression="SET content = :c, completed = :k",
+                    ExpressionAttributeValues={":c": content, ":k": completed},
                     ReturnValues="UPDATED_NEW",
                 )
 
