@@ -51,7 +51,6 @@ export function CreateMenu({ getTodos }) {
 
     if (item_type === "TODO") {
       item = {
-        title: content,
         content: content,
         item_type: item_type,
         completed: false,

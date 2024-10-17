@@ -6,6 +6,28 @@ export function Event({ event, getWeek }) {
   // Add local state to manage completed status
   const [isCompleted, setIsCompleted] = useState(event.completed);
 
+  const onEdit = async (item_id, item_type, newData) => {
+
+    newData = {
+      content: "new todo edit"
+    }
+    
+    try {
+      const response = await api.put(`api/todos/edit/${item_id}/${item_type}`, {
+        newData,
+      });
+
+      if (response.status === 204) {
+        console.log("Todo was edited successfully");
+      } else {
+        console.error("failed to edit the todo");
+      }
+    } catch (error) {
+      console.error("Failed to edit the todo", error);
+    }
+    getTodos();
+  };
+
   const setStatus = async (event) => {
     try {
       const response = await api.put(
