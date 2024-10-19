@@ -272,7 +272,7 @@ class Goal:
 
 
 class UserData:
-    def __init__(self, user_id):
+    def __init__(self, user_id) -> None:
         self.__user_id = user_id
 
         """
@@ -335,7 +335,7 @@ class UserData:
         todos = [todo.to_dict() for todo in self.__todos.values()]
         return todos
 
-    def getTodo(self, item_id):
+    def getTodo(self, item_id) -> Todo:
         return self.__todos[item_id]
 
     def delete_todo(self, item_id) -> bool:
@@ -346,7 +346,7 @@ class UserData:
 
         return True
 
-    def update_todo(self, item_id, isCompleted=None, content=None):
+    def update_todo(self, item_id, isCompleted=None, content=None) -> None:
         if item_id not in self.__todos:
             return False
 
@@ -404,7 +404,7 @@ class UserData:
             endFrequency=endFrequency,
         )
                
-    def get_frequentTasks(self):
+    def get_frequentTasks(self) -> dict:
         return self.__frequentTasks
 
     """
@@ -477,14 +477,14 @@ class UserData:
         #     return True
         return False
     
-    def get_tasks(self):
+    def get_tasks(self) -> dict:
         return self.__tasks
 
     """
     USER STUFF
     """
 
-    def get_user_id(self):
+    def get_user_id(self) -> str:
         return self.__user_id
 
     def checkIfDuplicate(self, newTask, d) -> bool:
@@ -495,8 +495,6 @@ class UserData:
 
     def getWeek(self, date) -> dict:
         week = {}
-
-        
         return week
 
     def getToday(self, date) -> dict:

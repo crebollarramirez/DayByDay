@@ -34,13 +34,14 @@ AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_DYNAMODB_TABLE_NAME = os.getenv("AWS_DYNAMODB_TABLE_NAME")
 AWS_DYNAMODB_TABLE_NAME2 = os.getenv("AWS_DYNAMODB_TABLE_NAME2")
+ENDPOINT_URL = os.getenv("ENDPOINT_URL")
 
 TABLE = boto3.resource(
             "dynamodb",
             region_name=AWS_REGION_NAME,
             aws_access_key_id=AWS_ACCESS_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-            endpoint_url="http://localhost:8080",  # For local DynamoDB instance
+            endpoint_url=ENDPOINT_URL,  # For local DynamoDB instance
         ).Table(AWS_DYNAMODB_TABLE_NAME)
 
 
