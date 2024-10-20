@@ -64,7 +64,6 @@ export function CreateMenu({ getTodos }) {
         frequency: frequency, // Make sure frequency is included
         timeFrame: timeFrame,
         endFrequency: endDay,
-        
       };
     } else if (item_type === "TASK") {
       item = {
@@ -82,7 +81,6 @@ export function CreateMenu({ getTodos }) {
     // setFrequency([]);
     // setScheduledDay("");
 
-    // Form submission logic...
     api
       .post("/api/tasks/", item)
       .then((res) => {

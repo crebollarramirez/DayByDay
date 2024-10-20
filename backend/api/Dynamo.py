@@ -3,6 +3,7 @@ import time
 from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError
+import csv
 load_dotenv()
 
 
@@ -125,34 +126,75 @@ class DynamoDB_Manager:
 
     @classmethod
     def addDummyData(cls):
-        Item1 = {
-            "user#item_type": "chris#TODO",
-            "user#item_id": "chris#asdfsd77Faddsf",
-            "content": "Take the dog for a morning walk.",
-            "completed": False,
-        }
-        Item2 = {
-            "user#item_type": "testuser#TODO",
-            "user#item_id": "testuser#asdfsd77Faddsf",
-            "content": "Take the dog outside.",
-            "completed": False,
-        }
-        Item3 = {
-            "user#item_type": "testuser_1#TODO",
-            "user#item_id": "testuser_1#asdfsd77Faddsf",
-            "content": "Take the dog outside.",
-            "completed": False,
-        }
-        Item4 = {
-            "user#item_type": "testuser_2#TODO",
-            "user#item_id": "testuser_2#asdfsd77Faddsf",
-            "content": "Take the dog outside.",
-            "completed": False,
-        }
+        currentDir = os.path.dirname(os.path.abspath(__file__))
+        parentDir = os.path.dirname(currentDir)
+        
+        items = []
+        with open(parentDir + "/test_data/tasks_test_data.csv", mode="r") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Convert the completed field to a boolean
+                row["completed"] = row["completed"] == "True"
+                row["timeFrame"] = tuple(row["timeFrame"].replace("[", "").replace("]", "").split(","))
+                items.append(row)
+
+
+
+        # item1 = {
+        #     "user#item_type": "chris#TASK",
+        #     "user#item_id": "chris#a1",  # Replace with a unique ID as needed
+        #     "title": "Math Homework",
+        #     "content": "Complete Chapter 5 exercises.",
+        #     "completed": False,
+        #     "timeFrame": ("14:00", "16:00"),
+        #     "date": "10-21-2024"
+        # }
+
+        # item2 = {
+        #     "user#item_type": "chris#TASK",
+        #     "user#item_id": "chris#a2",  # Replace with a unique ID as needed
+        #     "title": "Grocery Shopping",
+        #     "content": "Buy vegetables, fruits, and bread.",
+        #     "completed": False,
+        #     "timeFrame": ("10:00", "11:00"),
+        #     "date": "10-22-2024"
+        # }
+
+        # item3 = {
+        #     "user#item_type": "chris#TASK",
+        #     "user#item_id": "chris#a3",  # Replace with a unique ID as needed
+        #     "title": "Team Meeting",
+        #     "content": "Discuss project progress with team.",
+        #     "completed": True,
+        #     "timeFrame": ("09:00", "10:30"),
+        #     "date": "10-23-2024"
+        # }
+
+        # item4 = {
+        #     "user#item_type": "chris#TASK",
+        #     "user#item_id": "chris#a4",  # Replace with a unique ID as needed
+        #     "title": "Workout",
+        #     "content": "Upper body strength training.",
+        #     "completed": False,
+        #     "timeFrame": ("07:00", "08:00"),
+        #     "date": "10-24-2024"
+        # }
+
+        # item5 = {
+        #     "user#item_type": "chris#TASK",
+        #     "user#item_id": "chris#a5",  # Replace with a unique ID as needed
+        #     "title": "Client Presentation",
+        #     "content": "Present the marketing plan to the client.",
+        #     "completed": False,
+        #     "timeFrame": ("13:00", "14:30"),
+        #     "date": "10-25-2024"
+        # }
+        
         table = cls.__DYNAMODB.Table(cls.__AWS_DYNAMODB_TABLE_NAME)
-        table.put_item(Item=Item1)
-        table.put_item(Item=Item2)
-        table.put_item(Item=Item3)
-        table.put_item(Item=Item4)
-
-
+        for item in items:
+            table.put_item(Item=item)
+            # print(item)
+        # table.put_item(Item=item2)
+        # table.put_item(Item=item3)
+        # table.put_item(Item=item4)
+        # table.put_item(Item=item5)

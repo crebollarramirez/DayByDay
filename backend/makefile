@@ -1,7 +1,10 @@
 PYTHON = python3
+MANAGE = manage.py
+DYNAMO = api/db_manager.py
+DYNAMO_DIR = api
 
-run_script1: 
-	$(PYTHON) clear.py
+.PHONY: test
 
-run_script2: 
-	$(PYTHON) makeDB.py
+test: 
+	$(PYTHON) $(DYNAMO)	-A
+	$(PYTHON) $(MANAGE) test

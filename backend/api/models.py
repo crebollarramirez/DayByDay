@@ -307,13 +307,6 @@ class UserData:
         # self.__allFrequentTasks = {}
 
         self.__tasks: dict[str, Task] = {
-            "MONDAY": {},
-            "TUESDAY": {},
-            "WEDNESDAY": {},
-            "THURSDAY": {},
-            "FRIDAY": {},
-            "SATURDAY": {},
-            "SUNDAY": {},
         }
         # self.__allTasks = {}
 
@@ -361,14 +354,6 @@ class UserData:
         for freq in freqTask.frequency:
             if freqTask.item_id in self.__frequentTasks[freq.upper()]:
                 return False
-
-        # now checking if it overlaps with any task:
-        for freq in freqTask.frequency:
-            freq = freq.upper()
-            if freq in self.__tasks:
-                for task in self.__tasks[freq].values():
-                    if self.time_frame_overlap(task, freqTask):
-                        return False
                          
         for freq in freqTask.frequency:
             self.__frequentTasks[freq.upper()][freqTask.item_id] = freqTask
@@ -414,37 +399,29 @@ class UserData:
     def add_task(self, task: Task, fromDB=False) -> bool:
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
-        
-        # geting day of the week name
-        dayName = datetime.strptime(task.date, "%m-%d-%Y").strftime("%A").upper()
 
         if fromDB:
             if task.date not in self.__tasks:
                 self.__tasks[task.date] = {}
             self.__tasks[task.date][task.item_id] = task
-            self.__tasks[dayName][task.item_id] = task
             return True
 
+        print(task.toDict())
         # what we do to add tasks from user input
         if task.date not in self.__tasks:
             self.__tasks[task.date] = {}
             self.__tasks[task.date][task.item_id] = task
-            self.__tasks[dayName][task.item_id] = task
             return True
 
+        print("THIS IS BEFORE THE COMPARE")
+        print(task.toDict())
         for event in self.__tasks[task.date].values():
+            
+            
             if self.time_frame_overlap(event, task):
                 return False
 
-        # for event in self.__frequentTasks[dayName].values():
-        #     if event.children is not None:
-            
-        #     if  and self.time_frame_overlap(event, task):
-        #         return False
-
         self.__tasks[task.date][task.item_id] = task
-        self.__tasks[dayName][task.item_id] = task
-        # self.__allTasks[task.item_id] = task
         return True
 
     def delete_task(self, item_id) -> bool:
@@ -468,17 +445,18 @@ class UserData:
         for d in self.__tasks.values():
             if item_id in d:
                 d[item_id].update(isCompleted=isCompleted, title=title, content=content, timeFrame=timeFrame, date=date)
-                print("this is runnign in the update")
                 return True
-        # if item_id in self.__allTasks:
-        #     print("ITS HERE")
-        #     self.__allTasks[item_id]
-        #     print("it changes")
-        #     return True
         return False
     
     def get_tasks(self) -> dict:
-        return self.__tasks
+        organizedTasks = {}
+        
+        for day, tasks in self.__tasks.items():
+            organizedTasks[day] = {}
+            for task in tasks.values():
+               organizedTasks[day][task.item_id] = task.toDict()
+
+        return organizedTasks            
 
     """
     USER STUFF
@@ -539,5 +517,4 @@ class UserData:
             print("task2 time:")
             print(task2.toDict())
         # Check for overlap
-        print(not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes))
         return not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes)

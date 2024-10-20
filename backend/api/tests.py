@@ -89,6 +89,231 @@ class AuthenticationTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class TasksListTests(APITestCase):
+    def setUp(self) -> None:
+        # Create a user with username 'chris' and password 'chris'
+        self.user = User.objects.create_user(username="chris", password="chris")
+        self.client = APIClient()
+
+        # Generate a JWT token for the user
+        self.token = AccessToken.for_user(self.user)
+        # Set the token in the Authorization header for API requests
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.token))
+
+        currentDir = os.path.dirname(os.path.abspath(__file__))
+        parentDir = os.path.dirname(currentDir)
+
+        self.DATE = "10-20-2024"
+        self.tasksTestData = []
+        with open(parentDir + "/test_data/tasks_test_data.csv", mode="r") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Convert the completed field to a boolean
+                row["completed"] = row["completed"] == "True"
+                row["timeFrame"] = row["timeFrame"].replace("[", "").replace("]", "").split(",")
+                row['user'], row['item_id'] = row['user#item_id'].split("#")
+                _, row['item_type'] = row['user#item_type'].split("#")
+                self.tasksTestData.append(row)
+
+    # If this works well, we can rely one creating new data for each test
+    def test_01_get_week(self) -> None:
+        getTasksURL = reverse("week-list", kwargs={'date': self.DATE})
+        response = self.client.get(getTasksURL)
+        actual = []
+        for value in response.data.values():
+            for item in value.values():
+                actual.append(item)
+
+        expectedSorted = sorted(
+            self.tasksTestData, key=lambda d: (d["title"] + d["content"])
+        )
+        actualSorted = sorted(actual, key=lambda d: (d["title"] + d["content"]))
+
+
+        self.assertEqual(len(actual), len(self.tasksTestData))
+        for item1, item2 in zip(actualSorted, expectedSorted):
+            self.assertEqual(str(item1["title"]), str(item2["title"]))
+            self.assertEqual(str(item1["content"]), str(item2["content"]))
+            self.assertEqual(item1["timeFrame"][0], item2["timeFrame"][0])
+            self.assertEqual(item1["timeFrame"][1], item2["timeFrame"][1])
+            self.assertEqual(item1["completed"] == True, item2["completed"] == True)
+            self.assertEqual(str(item1["date"]), str(item2["date"]))
+            self.assertEqual(str(item1["item_id"]), str(item2["item_id"]))
+
+    # def test_02_create_task(self) -> None:
+    #     tasksToAdd = [
+    #         {
+    #             "title": "This is a test",
+    #             "content": "this is for testing purposes",
+    #             "timeFrame": ['10:00', '13:00'],
+    #             "date": "10-24-2024",
+    #             "item_type": "TASK",
+    #             "completed": False,
+    #         },
+    #         {
+    #             "title": "Another new Task",
+    #             "content": "This is for testing purposes",
+    #             "item_type": "TASK",
+    #             "completed": False,
+    #             "timeFrame": ['8:00', '10:00'],
+    #             "date": "10-21-2024",
+    #         }
+    #     ]
+
+    #     self.tasksTestData += tasksToAdd
+
+    #     for task in tasksToAdd:
+    #         createTaskURL = reverse("tasks")
+    #         response = self.client.post(
+    #             createTaskURL, data=task, 
+    #         )
+    #         print("this is the response")
+    #         print(response)
+    #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    #     # Now getting the week date using GET request
+    #     getWeekURL = reverse("tasks")
+    #     response = self.client.get(getWeekURL, format='json')
+
+    #     actual = []
+    #     for value in response.data.values():
+    #         for item in value.values():
+    #             actual.append(item)
+    #     actualSorted = sorted(actual, key=lambda d: (d["title"] + d["content"]))
+    #     expectedSorted = sorted(self.tasksTestData, key=lambda d: (d["title"] + d["content"]))
+
+    #     self.assertEqual(len(actual), len(self.tasksTestData))
+    #     for item1, item2 in zip(actualSorted, expectedSorted):
+    #         self.assertEqual(str(item1["title"]), str(item2["title"]))
+    #         self.assertEqual(str(item1["content"]), str(item2["content"]))
+    #         self.assertEqual(str(item1["timeFrame"]), str(item2["timeFrame"]))
+    #         self.assertEqual(item1["completed"] == True, item2["completed"] == True)
+    #         self.assertEqual(str(item1["date"]), str(item2["date"]))
+
+    def test_03_complete_task(self) -> None:
+        # Getting the week before any changes to the task
+        getTasksURL = reverse("tasks")
+        response = self.client.get(getTasksURL, format='json')
+
+        expected = []
+        for value in response.data.values():
+            for item in value.values():
+                expected.append(item)
+
+        # Editing Random items in the expected
+        changedItems = []
+        for _ in range(len(expected)):
+            randomIndex = random.randint(0, len(expected) - 1)
+            expected[randomIndex]['completed'] = not("True" == expected[randomIndex]['completed'])
+            changedItems.append(expected[randomIndex])
+
+        # Now attempting to edit those random items in actual tasks
+        for item in changedItems:
+            changeStatusURL = reverse(
+                "change-status",
+                kwargs={"item_id": item["item_id"], "item_type": item["item_type"]},
+            )
+
+            data = {
+                    "completed": item["completed"],
+                    }
+
+            response = self.client.put(
+                changeStatusURL, json.dumps(data), content_type="application/json"
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Now getting data again with hopefully edited items
+        tasksURL = reverse("tasks")
+        response = self.client.get(tasksURL)
+        
+        actual = []
+        for value in response.data.values():
+            for item in value.values():
+                actual.append(item)
+
+        # Sorting the lists for comparing
+        expectedList = sorted(expected, key=lambda d: (d["title"] + d["content"]))  # Sort by 'content'
+        actualList = sorted(actual, key=lambda d: (d["title"] + d["content"]))  # Sort by 'content'
+
+        # making sure the size didnt change
+        self.assertEqual(len(actual), len(expected))
+
+        # Comparing actual and expected
+        for item1, item2 in zip(expectedList, actualList):
+            self.assertEqual(str(item1["title"]), str(item2["title"]))
+            self.assertEqual(str(item1["content"]), str(item2["content"]))
+            self.assertEqual(str(item1["timeFrame"]), str(item2["timeFrame"]))
+            self.assertEqual(item1["completed"] == True, item2["completed"] == True)
+            self.assertEqual(str(item1["date"]), str(item2["date"]))
+
+
+    def test_04_update_task(self) -> None:
+        pass
+    
+    def test_05_delete_task(self) -> None:
+        # Getting the week before any changes to the task
+        getTasksURL = reverse("tasks")
+        response = self.client.get(getTasksURL)
+
+        expected = []
+        for value in response.data.values():
+            for item in value.values():
+                expected.append(item)
+
+        # Editing Random items in the expected
+        deletedItems = []
+        for _ in range(2):
+            randomIndex = random.randint(0, len(expected) - 1)
+            deletedItems.append(expected[randomIndex])
+            del expected[randomIndex]
+
+        # Now attempting to edit those random items in actual tasks
+        for item in deletedItems:
+            deleteURL = reverse(
+                "delete-task",
+                kwargs={"item_id": item["item_id"], "item_type": item["item_type"]},
+            )
+            response = self.client.delete(
+                deleteURL
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Now getting data again with hopefully edited items
+        tasksURL = reverse("tasks")
+        response = self.client.get(tasksURL)
+        
+        actual = []
+        for value in response.data.values():
+            for item in value.values():
+                actual.append(item)
+
+        # Sorting the lists for comparing
+        expectedList = sorted(expected, key=lambda d: (d["title"] + d["content"]))  # Sort by 'content'
+        actualList = sorted(actual, key=lambda d: (d["title"] + d["content"]))  # Sort by 'content'
+
+        # making sure the size didnt change
+        self.assertEqual(len(actual), len(expected))
+
+        # Comparing actual and expected
+        for item1, item2 in zip(expectedList, actualList):
+            self.assertEqual(str(item1["title"]), str(item2["title"]))
+            self.assertEqual(str(item1["content"]), str(item2["content"]))
+            self.assertEqual(str(item1["timeFrame"]), str(item2["timeFrame"]))
+            self.assertEqual(item1["completed"] == True, item2["completed"] == True)
+            self.assertEqual(str(item1["date"]), str(item2["date"]))
+
+    def test_06_overlap_task_case(self) -> None:
+        pass
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super(TasksListTests, cls).tearDownClass()
+        DynamoDB_Manager.clear_table()
+
+
 """
 Test suite for Todo-related operations in the API, including adding, deleting,
 marking todos as complete, and editing todos. Each test ensures that the 
@@ -180,6 +405,7 @@ class TodoListTests(APITestCase):
                 },
             )
             response = self.client.delete(delete_url)
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # Getting the new list of todos - deleted data
         response = self.client.get(url)
@@ -228,7 +454,7 @@ class TodoListTests(APITestCase):
             response = self.client.put(
                 changeStatusURL, json.dumps(data), content_type="application/json"
             )
-
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         response = self.client.get(todosURL)
         actual = response.data
 
@@ -269,7 +495,7 @@ class TodoListTests(APITestCase):
             response = self.client.put(
                 editURL, json.dumps(data), content_type="application/json"
             )
-
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         response = self.client.get(todosURL)
         actual = response.data
 
@@ -299,69 +525,3 @@ class TodoListTests(APITestCase):
     def tearDownClass(cls) -> None:
         super(TodoListTests, cls).tearDownClass()
         DynamoDB_Manager.clear_table()
-        print("this is running at the end.")
-
-
-class TasksListTests(APITestCase):
-    def setUp(self) -> None:
-        # Create a user with username 'chris' and password 'chris'
-        self.user = User.objects.create_user(username="chris", password="chris")
-        self.client = APIClient()
-
-        # Generate a JWT token for the user
-        self.token = AccessToken.for_user(self.user)
-        # Set the token in the Authorization header for API requests
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.token))
-
-    def test_create_task(self) -> None:
-        tasks = []
-
-        currentDir = os.path.dirname(os.path.abspath(__file__))
-        parentDir = os.path.dirname(currentDir)
-
-        with open(parentDir + "/test_data/tasks_test_data.csv", mode="r") as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                # Convert the completed field to a boolean
-                row["completed"] = row["completed"] == "True"
-                tasks.append(row)
-
-
-        # for task in tasks:
-        #     createTaskURL = reverse("create-task")
-        #     response = self.client.post(
-        #         createTaskURL, json.dumps(task), content_type="application/json"
-        #     )
-        #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-
-        # DATE = "10-20-2024"
-    
-        # # Now getting the week date using GET request
-        # getWeekURL = reverse("week-list", kwargs={'date': DATE})
-        # response = self.client.get(getWeekURL, format='json')
-        # print(response.data)
-        
-        
-        # # Sending todo in the post request
-        # for task in tasks:
-        #     response = self.client.post(url, data=task)
-        #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_get_week(self) -> None:
-        pass
-
-    def test_delete_task(self) -> None:
-        pass
-
-    def test_change_task_status(self) -> None:
-        pass
-
-    def test_update_task(self) -> None:
-        pass
-
-    def test_overlap_task_case(self) -> None:
-        pass
-
-    # def tearDown(self) -> None:
-    #     DynamoDB_Manager.clear_table()

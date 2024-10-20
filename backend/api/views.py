@@ -63,15 +63,22 @@ class WeekList(APIView):
 
         return Response(ScheduleManager.getWeek(self.request, kwargs['date']))
     
-    def delete(self, request, *args, **kwargs):
-        user = str(self.request.user)
-        
-        return ScheduleManager.delete(request, kwargs['item_id'], kwargs['item_type'])
+class TaskList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs) -> Response:    
+        return Response(ScheduleManager.getTasks(self.request))
     
     def post(self, request, *args, **kwargs) -> Response:
-        return ScheduleManager.create(request)
+        return ScheduleManager.create(self.request)
     
+    def put(self, request, *args, **kwargs) -> Response: 
+        return ScheduleManager.update(self.request, kwargs['item_id'], kwargs['item_type'])
     
+    def delete(self, request, *args, **kwargs) -> Response: 
+        return ScheduleManager.delete(self.request, kwargs['item_id'], kwargs['item_type'])
+    
+
 class TodayList(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,4 +87,5 @@ class TodayList(APIView):
 
         response = ScheduleManager.getToday(request, kwargs['todayDate'])
         return Response(response)
+    
         

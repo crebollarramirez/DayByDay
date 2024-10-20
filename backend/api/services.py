@@ -55,6 +55,7 @@ class ScheduleManager:
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
                     date = item.get("date")
+                    
                     task = Task(item_id, title, content, isCompleted, timeFrame, date)
                     cls.__users[user_id].add_task(task, True)
 
@@ -71,6 +72,8 @@ class ScheduleManager:
         START_DAY = datetime.strptime(date, "%m-%d-%Y").date()
         week = {}
 
+        user:UserData = cls.__users[user_id]
+
         for i in range(1, 7):
             dayName = str((START_DAY + timedelta(days=i)).strftime("%A"))
             fullDay = (
@@ -82,23 +85,9 @@ class ScheduleManager:
                 week[fullDay] = {}
             user:UserData = cls.__users[user_id]
 
-            # for freqTask in user.get_frequentTasks()[dayName.upper()].values():
-
-                # newTask = freqTask.generate(d)
-                # print(newTask.toDict())
-                # print()
-                # print(newTask)
-
-                # # if len(user.get_tasks()[dayName.upper()]) == 0:
-                # user.add_task(newTask)
-                
-                # # elif (d in user.get_tasks()) and not(user.checkIfDuplicate(newTask, d)):
-                # #     user.add_task(newTask)
-
-            if d in user.get_tasks():
-                for item_id, task in user.get_tasks()[d].items():
-                    week[fullDay][item_id] = task.toDict()
-
+            userTasks = user.get_tasks()
+            if d in userTasks:
+                week[fullDay] = userTasks[d]
         return week
 
     @classmethod
@@ -111,6 +100,15 @@ class ScheduleManager:
 
             return cls.__users[user_id].getToday(date)
 
+    @classmethod 
+    def getTasks(cls, request) -> dict:
+        if request.method == "GET":
+            user_id = str(request.user)
+
+        if user_id not in cls.__users:
+            cls.__users[user_id] = UserData(user_id)   
+
+        return cls.__users[user_id].get_tasks()
     @classmethod
     def getCustomizedWeek(cls):
         pass
@@ -133,7 +131,11 @@ class ScheduleManager:
     def create(cls, request) -> Response:
         user_id = str(request.user)
 
+        if user_id not in cls.__users:
+            cls.__users[user_id] = UserData(user_id)
+
         data = request.data
+        # print(request.data)
 
         # ALL ITEMS HAVE THESE ATTRIBUTES
         item_type = data.get("item_type")
@@ -160,6 +162,9 @@ class ScheduleManager:
             completed = data.get("completed")
             timeFrame = data.get("timeFrame")
             date = data.get("date")
+
+            print('THIS IS TIMEFRAME')
+            print(timeFrame)
 
             task = Task(
                 item_id=item_id,

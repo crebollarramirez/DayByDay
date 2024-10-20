@@ -1,5 +1,5 @@
 import argparse
-from .Dynamo import DynamoDB_Manager
+from Dynamo import DynamoDB_Manager
 
 # Initialize the parser
 parser = argparse.ArgumentParser(description="Manipulating the table")
@@ -38,5 +38,5 @@ if args.c:
 
 if args.A:
     DynamoDB_Manager.clear_table()
-    # DynamoDB_Manager.addDummyData()
+    DynamoDB_Manager.addDummyData()
     DynamoDB_Manager.show()
