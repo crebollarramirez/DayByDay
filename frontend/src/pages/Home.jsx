@@ -1,4 +1,5 @@
-import { CreateMenu } from "../components/BottomViews/CreateMenu";
+import { RightSideBar } from "../components/BottomViews/RightSideBar";
+import { LeftSideBar } from "../components/BottomViews/LeftSideBar";
 import Form from "../components/Form";
 import { TodosBox } from "../components/BottomViews/TodosBox";
 import React, { useState, useEffect } from "react";
@@ -36,19 +37,9 @@ function Home() {
   return (
     <div className="main-container">
       <main>
+        <LeftSideBar/>
         <Week />
-        <div className="bottomItems-container">
-          <div className="bottomView">
-            <Today toggleCreateMenu={toggleCreateMenu} />
-            <TodosBox getTodos={getTodos} todos={todos} />
-            {isCreateMenuVisible ? (
-              <CreateMenu getTodos={getTodos} />
-            ) : (
-              <QuoteOfTheDay />
-            )}
-            <Chat />
-          </div>
-        </div>
+        <RightSideBar getTodos={getTodos} />
       </main>
     </div>
   );

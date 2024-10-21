@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TodayTask } from "./TodayTask";
 import api from "../../api";
-import { CreateMenu } from "./CreateMenu";
+import { RightSideBar } from "./RightSideBar";
 import "../../styles/todayStyle.css";
 
 export function Today({ toggleCreateMenu }) {

@@ -79,7 +79,6 @@ INSTALLED_APPS = [
     "api",
     "rest_framework",
     "corsheaders",
-    'dynamorm',
 ]
 
 # AUTH_USER_MODEL = 'api.User'

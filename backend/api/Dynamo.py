@@ -21,8 +21,6 @@ class DynamoDB_Manager:
     region_name=__AWS_REGION_NAME,
     endpoint_url=__ENDPOINT_URL,  # For local DynamoDB instance
     )    
-    def __init__():
-        pass
 
     @classmethod
     def delete_table(cls):

@@ -1,3 +1,6 @@
 env
 frontend/src/.env
 backend/.env
+backend/Dockerfile
+frontend/Dockerfile
+docker-compose.yml
