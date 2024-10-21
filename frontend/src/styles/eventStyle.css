@@ -15,7 +15,6 @@
     gap: 0.1em;
     align-items: flex-start; /* Use flex-start instead of start */
     justify-content: flex-start; /* Use flex-start instead of start */
-    grid-column: 1/-1;
     border-color: #f2d3d8;
     border-radius: 0.5em;
     background-color: #ffd6d1;
@@ -27,7 +26,6 @@
     font-size: 1em;
 
 }
-
 .event p{
     font-size: 0.8em;
 }

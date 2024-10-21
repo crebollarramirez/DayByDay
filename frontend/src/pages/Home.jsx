@@ -8,9 +8,8 @@ import { Week } from "../components/Week/Week";
 import { Today } from "../components/BottomViews/Today";
 import "./../styles/homeStyle.css";
 import { QuoteOfTheDay } from "../components/BottomViews/QuoteOfTheDay";
-import { Chat } from "../components/AIChat/Chat";
 
-function Home() {
+function Home({user="User"}) {
   const [todos, setTodos] = useState([]);
   const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false); // State for CreateMenu visibility
 
@@ -36,6 +35,7 @@ function Home() {
 
   return (
     <div className="main-container">
+      <h1>Welcome {user}</h1>
       <main>
         <LeftSideBar/>
         <Week />

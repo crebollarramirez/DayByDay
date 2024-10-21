@@ -11,4 +11,5 @@ urlpatterns = [
     path('tasks/delete//<str:item_id>/<str:item_type>', views.TodayList.as_view(), name='delete-task'),
     path('tasks/', views.TaskList.as_view(), name="tasks"),
     path('tasks/delete/<str:item_id>/<str:item_type>', views.TaskList.as_view(), name="delete-task"),
+    path('chat/', views.ChatAI.as_view(), name="send-message"),
 ]

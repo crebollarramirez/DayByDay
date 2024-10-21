@@ -1,10 +1,9 @@
 .timeLine-container{
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(24, 60px); /* Each row is 1 hour (60px) */
+    grid-template-rows: repeat(24, 1fr); /* Each row is 1 hour (60px) */
     height: 100%;
     width: 20%;
-
     margin-top: 3.5em;
     grid-column: 1/2;
 }
@@ -13,4 +12,7 @@
     padding: 0;
     margin: 0;
     text-align: right;
+    font-size: 0.1em;
+    color: white;
+    opacity: 70%;
 }
