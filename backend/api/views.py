@@ -6,6 +6,7 @@ from .ScheduleManager import ScheduleManager
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
+from .services import AIBot
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -121,6 +122,8 @@ class ChatAI(APIView):
         print("this is the message received")
         user_message = request.data.get("message")
 
+        AIBot.handleUserMessage(request, user_message)
+        
         # Generate a reply (you can customize this logic)
         bot_reply = "this is the bot reply!"
 

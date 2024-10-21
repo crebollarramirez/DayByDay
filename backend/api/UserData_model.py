@@ -138,20 +138,11 @@ class UserData:
             self.__tasks[task.date][task.item_id] = task
             return True
 
-        print(task.toDict())
         # what we do to add tasks from user input
         if task.date not in self.__tasks:
             self.__tasks[task.date] = {}
             self.__tasks[task.date][task.item_id] = task
             return True
-
-        print("THIS IS BEFORE THE COMPARE")
-        print(task.toDict())
-        for event in self.__tasks[task.date].values():
-            
-            
-            if self.time_frame_overlap(event, task):
-                return False
 
         self.__tasks[task.date][task.item_id] = task
         return True
@@ -220,33 +211,4 @@ class UserData:
 
         return today
 
-    """
-    Check if two tasks overlap based on their time frames.
 
-    :param task1: First task (FrequentTask or Task)
-    :param task2: Second task (FrequentTask or Task)
-    :return: True if the time frames overlap, False otherwise
-    """
-
-    def time_frame_overlap(self, task1, task2) -> bool:
-        start1, end1 = task1.timeFrame
-        start2, end2 = task2.timeFrame
-
-        # Convert military time to minutes since midnight for comparison
-        def military_to_minutes(military_time):
-            hours, minutes = map(int, military_time.split(":"))
-            return hours * 60 + minutes
-
-        start1_minutes = military_to_minutes(start1)
-        end1_minutes = military_to_minutes(end1)
-        start2_minutes = military_to_minutes(start2)
-        end2_minutes = military_to_minutes(end2)
-
-
-        if not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes):
-            print("task1 time:")
-            print(task1.toDict())
-            print("task2 time:")
-            print(task2.toDict())
-        # Check for overlap
-        return not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes)

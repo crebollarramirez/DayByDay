@@ -7,6 +7,7 @@
     align-items: center;
     justify-content: start;
     gap: 1em;
-    box-shadow: 0px 0px 35px -16px rgba(0, 0, 0, 0.75);
+    /* box-shadow: 0px 0px 35px -16px rgba(0, 0, 0, 0.75); */
     order: 1;
+    border: pink solid 2px;
   }

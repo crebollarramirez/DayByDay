@@ -9,6 +9,7 @@ import { Today } from "../components/BottomViews/Today";
 import "./../styles/homeStyle.css";
 import { QuoteOfTheDay } from "../components/BottomViews/QuoteOfTheDay";
 
+
 function Home({user="User"}) {
   const [todos, setTodos] = useState([]);
   const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false); // State for CreateMenu visibility
@@ -37,7 +38,7 @@ function Home({user="User"}) {
     <div className="main-container">
       <h1>Welcome {user}</h1>
       <main>
-        <LeftSideBar/>
+        <LeftSideBar getTodos={getTodos} todos={todos}/>
         <Week />
         <RightSideBar getTodos={getTodos} />
       </main>

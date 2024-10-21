@@ -1,5 +1,6 @@
-import react from "react";
+import React from "react";
 import api from "../../api";
+import "../../styles/todoStyle.css";
 
 export function Todo({ todo, onDelete, onEdit, getTodos }) {
   const setStatus = async (todo) => {
@@ -12,39 +13,44 @@ export function Todo({ todo, onDelete, onEdit, getTodos }) {
       if (response.status === 204) {
         console.log("Todo was edited successfully");
       } else {
-        console.error("failed to edit the todo");
+        console.error("Failed to edit the todo");
       }
     } catch (error) {
       console.error("Failed to set todo status", error);
     }
-    getTodos(); 
+    getTodos();
   };
 
   return (
-    <div className="todl-container">
-      {/* <h3>{todo.title}</h3> */}
+    <div className="todo-container">
+      <div className="content">
+        <input
+          type="checkbox"
+          checked={todo.completed}
+          onChange={() => setStatus(todo)} // Toggle the completion status
+          className="checkbox" // Optional: Add a class for styling
+        />
+        <span
+          style={{ textDecoration: todo.completed ? "line-through" : "none" }}
+        >
+          <p>{todo.content}</p>
+        </span>
+      </div>
 
-      <span
-        style={{ textDecoration: todo.completed ? "line-through" : "none" }}
-      >
-        {todo.content}
-      </span>
-
-      <button
-        className="delete-button"
-        onClick={() => onDelete(todo.item_id, todo.item_type)}
-      >
-        Delete
-      </button>
-      <button
-        className="edit-button"
-        onClick={() => onEdit(todo.item_id, todo.item_type)}
-      >
-        Edit
-      </button>
-      <button className="statusChange-button" onClick={() => setStatus(todo)}>
-        {todo.completed ? "Undo" : "Complete"}
-      </button>
+      <div className="buttons">
+        <button
+          className="delete-button"
+          onClick={() => onDelete(todo.item_id, todo.item_type)}
+        >
+          Delete
+        </button>
+        <button
+          className="edit-button"
+          onClick={() => onEdit(todo.item_id, todo.item_type)}
+        >
+          Edit
+        </button>
+      </div>
     </div>
   );
 }

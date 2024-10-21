@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
 import { Todo } from "./Todo";
-import '../../styles/todosBoxStyle.css';
+import "../../styles/todosBoxStyle.css";
 
-export function TodosBox({getTodos, todos}) {
-
+export function TodosBox({ getTodos, todos }) {
   // Function to delete a task
   const deleteTodo = async (item_id, item_type) => {
     try {
@@ -44,15 +43,17 @@ export function TodosBox({getTodos, todos}) {
   return (
     <div className="todos-container">
       <h2>Todos</h2>
-      {todos.map((todo) => (
-        <Todo
-          todo={todo}
-          onDelete={deleteTodo}
-          onEdit={editTodo}
-          key={todo.title}
-          getTodos={getTodos}
-        />
-      ))}
+      <div className="todos-list-container">
+        {todos.map((todo) => (
+          <Todo
+            todo={todo}
+            onDelete={deleteTodo}
+            onEdit={editTodo}
+            key={todo.title}
+            getTodos={getTodos}
+          />
+        ))}
+      </div>
     </div>
   );
 }

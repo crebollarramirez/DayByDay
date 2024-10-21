@@ -57,6 +57,8 @@ class ScheduleManager:
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
                     date = item.get("date")
+
+
                     
                     task = Task(item_id, title, content, isCompleted, timeFrame, date)
                     cls.__users[user_id].add_task(task, True)
@@ -377,3 +379,42 @@ class ScheduleManager:
                     },
                     status=204,
                 )
+            
+    
+    """
+    Check if two tasks overlap based on their time frames.
+
+    :param task: timeFrame in format ["HH:MM", "HH:MM"], date in format MM-DD-YYYY
+    :return: a Task if there was an overlap, else None
+    """
+    @classmethod
+    def time_frame_overlap(cls, user_id, timeFrame, date) -> Task:
+        # Convert military time to minutes since midnight for comparison
+        def military_to_minutes(military_time):
+            hours, minutes = map(int, military_time.split(":"))
+            return hours * 60 + minutes
+
+        user = cls.__users.get(user_id)
+
+        # If the user or the task date doesn't exist, return None
+        if not user or date not in user.get_tasks():
+            return None
+
+        # Iterate through existing tasks on the same date
+        for event in user.get_tasks()[date]:
+            start1, end1 = timeFrame
+            start2, end2 = event.timeFrame
+
+            # Convert timeframes to minutes for comparison
+            start1_minutes = military_to_minutes(start1)
+            end1_minutes = military_to_minutes(end1)
+            start2_minutes = military_to_minutes(start2)
+            end2_minutes = military_to_minutes(end2)
+
+            # Check if the timeframes overlap
+            if not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes):
+                return event  # Return the task that overlaps
+
+        # Return None if no overlap is found
+        return None
+
