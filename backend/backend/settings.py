@@ -63,13 +63,14 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'username',
     'JWT_SECRET_KEY': os.getenv('DJANGO_SECRET_KEY', 'your_fallback_secret_key'),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=4),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
 }
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'channels',
     "django.contrib.admin",
     "django.contrib.auth",
