@@ -70,6 +70,7 @@ SIMPLE_JWT = {
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -80,6 +81,15 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
 ]
+
+ASGI_APPLICATION = "backend.asgi.application"
+
+# Use an in-memory channel layer for WebSocket communication
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # AUTH_USER_MODEL = 'api.User'
 

@@ -13,9 +13,11 @@ import { QuoteOfTheDay } from "../components/BottomViews/QuoteOfTheDay";
 function Home({user="User"}) {
   const [todos, setTodos] = useState([]);
   const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false); // State for CreateMenu visibility
+  const [username, setUsername] = useState("User")
 
   useEffect(() => {
     getTodos();
+    getUserName();
   }, []);
 
   const getTodos = () => {
@@ -27,7 +29,17 @@ function Home({user="User"}) {
         console.log(data)
       })
       .catch((err) => alert(err));
-      
+  };
+
+  const getUserName = () => {
+    api 
+      .get("./api/username/")
+      .then((res) => res.data)
+      .then((data) => {
+        setUsername(data)
+        console.log(data)
+      })
+      .catch((err) => alert(err));
   };
 
   const toggleCreateMenu = () => {
@@ -36,7 +48,7 @@ function Home({user="User"}) {
 
   return (
     <div className="main-container">
-      <h1>Welcome {user}</h1>
+      <h1>Welcome {username}</h1>
       <main>
         <LeftSideBar getTodos={getTodos} todos={todos}/>
         <Week />

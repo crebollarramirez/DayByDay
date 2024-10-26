@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
-import { Todo } from "./Todo";
+import { Todo } from "./Todo"
 import "../../styles/todosBoxStyle.css";
 
 export function TodosBox({ getTodos, todos }) {

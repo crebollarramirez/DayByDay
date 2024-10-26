@@ -112,43 +112,57 @@ export function CreateMenu({ getTodos }) {
         </select>
 
         {itemType === "TODO" && (
-          <>
-            <label htmlFor="content">Content</label>
+          <div className="form__group field">
             <textarea
+              className="form__field"
               id="content"
               name="content"
               required
               value={content}
               onChange={(e) => setContent(e.target.value)}
             ></textarea>
-          </>
+            <label htmlFor="content" className="form__label">
+              Content
+            </label>
+          </div>
         )}
 
         {(itemType === "TASK" || itemType === "FREQUENT") && (
           <>
-            <label htmlFor="title">Title</label>
-            <textarea
-              id="title"
-              name="title"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            ></textarea>
-
-            <label htmlFor="content">Content</label>
-            <textarea
-              id="content"
-              name="content"
-              required
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            ></textarea>
+            <div className="form__group field">
+              <textarea
+                className="form__field"
+                placeholder="Title"
+                name="title"
+                id="title"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <label htmlFor="title" className="form__label">
+                Title
+              </label>
+            </div>
+            <div className="form__group field">
+              <textarea
+                className="form__field"
+                id="content"
+                name="content"
+                required
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              ></textarea>
+              <label htmlFor="content" className="form__label">
+                Content
+              </label>
+            </div>
 
             {/* Only show scheduledDay if frequency is not selected */}
             {frequency.length === 0 && (
-              <>
-                <label htmlFor="scheduledDay">Scheduled Day</label>
+              <div className="form__group field">
+                <label htmlFor="scheduledDay" className="form__label">Scheduled Day</label>
                 <input
+                  className="form__field"
                   type="date"
                   id="scheduledDay"
                   name="scheduledDay"
@@ -156,28 +170,41 @@ export function CreateMenu({ getTodos }) {
                   onChange={(e) => setScheduledDay(e.target.value)}
                   required
                 />
-              </>
+              </div>
             )}
 
-            <label htmlFor="timeFrom">From:</label>
-            <input
-              type="time"
-              id="timeFrom"
-              name="timeFrom"
-              min="00:00"
-              max="24:00"
-              onChange={handleTimeFromChange}
-            />
+            <div className="time-container">
+              <div className="form__group field">
+                <label htmlFor="timeFrom" className="form__label">
+                  From:
+                </label>
+                <input
+                  type="time"
+                  id="timeFrom"
+                  name="timeFrom"
+                  className="form__field"
+                  min="00:00"
+                  max="24:00"
+                  required
+                  onChange={handleTimeFromChange}
+                />
+              </div>
 
-            <label htmlFor="timeTo">To:</label>
-            <input
-              type="time"
-              id="timeTo"
-              name="timeTo"
-              min="00:00"
-              max="24:00"
-              onChange={handleTimeToChange}
-            />
+              <div className="form__group field">
+                <label htmlFor="timeTo" className="form__label">
+                  To:
+                </label>
+                <input
+                  type="time"
+                  id="timeTo"
+                  name="timeTo"
+                  className="form__field"
+                  min="00:00"
+                  max="24:00"
+                  onChange={handleTimeToChange}
+                />
+              </div>
+            </div>
 
             {/* Only show frequency if scheduledDay is not filled */}
             {scheduledDay === "" && (
@@ -219,7 +246,7 @@ export function CreateMenu({ getTodos }) {
         )}
 
         <br />
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Submit" className="submit-button" />
       </form>
     </div>
   );

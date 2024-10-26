@@ -10,6 +10,6 @@ class ApiConfig(AppConfig):
 
     def ready(self):
         # Run getData() only when RUN_MAIN is not set to prevent double execution during reload
-        DynamoDB_Manager().create_dynamodb_table()
+        # DynamoDB_Manager().create_dynamodb_table()
         ScheduleManager().getData()
         print("SERVER RESTARTS")

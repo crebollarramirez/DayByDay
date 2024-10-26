@@ -20,6 +20,13 @@ class CreateUserView(generics.CreateAPIView):
             user = serializer.save()  # This will create the user
             return Response({"username": user.username}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserInfo(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs) -> Response:
+        return Response(str(self.request.user))
+    
 
 
 class TodosList(APIView):
@@ -123,7 +130,7 @@ class ChatAI(APIView):
         user_message = request.data.get("message")
 
         AIBot.handleUserMessage(request, user_message)
-        
+
         # Generate a reply (you can customize this logic)
         bot_reply = "this is the bot reply!"
 
@@ -131,10 +138,4 @@ class ChatAI(APIView):
         return Response(
             {"reply": bot_reply}, 
             status=status.HTTP_200_OK
-        )
-
-
-        return Response(
-            {"message": "Message received successfully."}, 
-            status=status.HTTP_201_CREATED
         )
