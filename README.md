@@ -8,16 +8,18 @@ that I wanted to find a way to make it easier to organize big plans that I wante
 
 ## 📅 Project Timeline
 
-| **Phase**                                | **Description**                                                                      | **Start Date** | **End Date** | **Status**  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------ | -------------- | ------------ | ----------- |
-| **Phase 1: Planning**                    | Choosing Tech stack, researching tools, and try new tech.                            | 07/25/2024     | 09/17/2024   | Completed   |
-| **Phase 2: Frontend and Backend Setup**  | Get basic app working with frontend (react.js) and backend (django)                  | 09/17/2024     | 09/20/2024   | Completed   |
-| **Phase 3: Connect Backend to Database** | Learn to use DynamoDB and connect API to DynamoDB                                    | 09/20/2024     | 09/23/2024   | Completed   |
-| **Phase 4: Organize data**               | Figure out the best way to organize data                                             | 09/23/2024     | 09/25/2024   | In Progress |
-| **Phase 5: Authentication**              | Setup authentication using Django tool and JWT tokens for the front end              | 09/25/2024     | 09/26/2024   | Not Started |
-| **Phase 6: Backend Models**              | Finish backend data models for tasks and other entities                              | 09/26/2024     | 09/27/2024   | Not Started |
-| **Phase 7: Weather Feature**             | Implement a Weather API to display weather of current location                       | 09/28/2024     | 09/28/2024   | Not Started |
-| **Phase 8: AI Task Planner**             | Design the workflow for the AI-powered assistant to read/write tasks to the database | 09/29/2024     | 10/01/2024   | Not Started |
+| **Phase**                                    | **Description**                                                                      | **Start Date** | **End Date** | **Status**  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------ | -------------- | ------------ | ----------- |
+| **Phase 1: Planning**                        | Choosing Tech stack, researching tools, and try new tech.                            | 07/25/2024     | 09/17/2024   | Completed   |
+| **Phase 2: Frontend and Backend Setup**      | Get basic app working with frontend (react.js) and backend (django)                  | 09/17/2024     | 09/20/2024   | Completed   |
+| **Phase 3: Connect Backend to Database**     | Learn to use DynamoDB and connect API to DynamoDB                                    | 09/20/2024     | 09/23/2024   | Completed   |
+| **Phase 4: Organize data**                   | Figure out the best way to organize data                                             | 09/23/2024     | 09/25/2024   | Completed   |
+| **Phase 5: Authentication**                  | Setup authentication using Django tool and JWT tokens for the front end              | 09/25/2024     | 10/06/2024   | Completed   |
+| **Phase 6: Backend Models**                  | Finish backend data models for tasks and other entities                              | 10/10/2024     | 10/16/2024   | Completed   |
+| **Phase 7: AI Task Planner**                 | Design the workflow for the AI-powered assistant to read/write tasks to the database | 10/17/2024     | 10/20/2024   | In Progress |
+| **Phase 8: Complete All Unit Tests**         | Make sure to have all tests setup for each feature working well                      | 10/20/2024     | 10/27/2024   | In Progress |
+| **Phase 9: Finsh All Project Documenation** | Make sure frontend is setup correctly and have decent styles                         | 10/27/2024     | 10/28/2024   | In Progress |
+| **Phase 10: Finsh All Project Documenation**  | Have well documented code for each relevent backend file and frontend file           | 10/28/2024     | 10/28/2024   | In Progress |
 
 ## Bult With
 

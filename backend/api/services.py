@@ -34,8 +34,6 @@ class AIBot:
 
         response = json.loads(response)
 
-        
-
         generated = []
         print(f"response from bot: {response}")
         for task in response:
