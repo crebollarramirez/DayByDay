@@ -40,10 +40,9 @@ export function CreateMenu({ getTodos }) {
 
     // Prioritize "FREQUENT" if frequency is selected
 
-    if (frequency.length !== 0) {
-      console.log("this is running");
-      item_type = "FREQUENT";
-    } else if (scheduledDay !== "") {
+    if (title === "") {
+      item_type = "TODO";
+    } else{
       // Only set to "TASK" if frequency is empty and scheduledDay is provided
       console.log("This is also running");
       item_type = "TASK";
@@ -54,6 +53,7 @@ export function CreateMenu({ getTodos }) {
         content: content,
         item_type: item_type,
         completed: false,
+        date: formatDate(scheduledDay),
       };
     } else if (item_type === "FREQUENT") {
       item = {
@@ -112,19 +112,35 @@ export function CreateMenu({ getTodos }) {
         </select>
 
         {itemType === "TODO" && (
-          <div className="form__group field">
-            <textarea
-              className="form__field"
-              id="content"
-              name="content"
-              required
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            ></textarea>
-            <label htmlFor="content" className="form__label">
-              Content
-            </label>
-          </div>
+          <>
+            <div className="form__group field">
+              <textarea
+                className="form__field"
+                id="content"
+                name="content"
+                required
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              ></textarea>
+              <label htmlFor="content" className="form__label">
+                Content
+              </label>
+            </div>
+            <div className="form__group field">
+              <label htmlFor="scheduledDay" className="form__label">
+                Scheduled Day
+              </label>
+              <input
+                className="form__field"
+                type="date"
+                id="scheduledDay"
+                name="scheduledDay"
+                value={scheduledDay}
+                onChange={(e) => setScheduledDay(e.target.value)}
+                required
+              />
+            </div>
+          </>
         )}
 
         {(itemType === "TASK" || itemType === "FREQUENT") && (
@@ -160,7 +176,9 @@ export function CreateMenu({ getTodos }) {
             {/* Only show scheduledDay if frequency is not selected */}
             {frequency.length === 0 && (
               <div className="form__group field">
-                <label htmlFor="scheduledDay" className="form__label">Scheduled Day</label>
+                <label htmlFor="scheduledDay" className="form__label">
+                  Scheduled Day
+                </label>
                 <input
                   className="form__field"
                   type="date"

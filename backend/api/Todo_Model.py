@@ -19,13 +19,15 @@ class Todo:
         item_id (str): A unique identifier for the to-do item.
         content (str): The content or description of the to-do item.
         completed (bool): Indicates whether the to-do item is completed.
+        date (str): What day is this todo for.
     """
 
-    def __init__(self, item_id, content, completed) -> None:
+    def __init__(self, item_id, content, completed, date) -> None:
 
         self.item_id = item_id
         self.content = content
         self.completed = completed
+        self.date = date
 
     """
     Returns the type of the to-do item.
@@ -52,6 +54,7 @@ class Todo:
             "content": self.content,
             "completed": self.completed,
             "item_type": self.__ITEM_TYPE,
+            "date": self.date
         }
 
     """

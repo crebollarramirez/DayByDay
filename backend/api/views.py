@@ -37,7 +37,7 @@ class TodosList(APIView):
         user = self.request.user
 
         # Assuming get_user_schedule is a method in your ScheduleManager
-        return Response(ScheduleManager.getTodos(self.request))
+        return Response(ScheduleManager.getTodos(self.request, kwargs["date"]))
 
     def post(self, request, *args, **kwargs) -> Response:
         return ScheduleManager.create(request)

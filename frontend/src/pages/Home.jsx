@@ -9,35 +9,46 @@ import { Today } from "../components/BottomViews/Today";
 import "./../styles/homeStyle.css";
 import { QuoteOfTheDay } from "../components/BottomViews/QuoteOfTheDay";
 
-
-function Home({user="User"}) {
+function Home({ user = "User" }) {
   const [todos, setTodos] = useState([]);
   const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false); // State for CreateMenu visibility
-  const [username, setUsername] = useState("User")
+  const [username, setUsername] = useState("User");
 
   useEffect(() => {
     getTodos();
     getUserName();
   }, []);
+  const getFormattedDate = () => {
+    const now = new Date();
+
+    const month = (now.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-based, so we add 1
+    const day = now.getDate().toString().padStart(2, "0");
+    const year = now.getFullYear();
+
+    return `${month}-${day}-${year}`;
+  };
 
   const getTodos = () => {
-    api 
-      .get("./api/todos/")
+    const date = getFormattedDate();
+
+    api
+      .get(`./api/todos/${date}`)
       .then((res) => res.data)
       .then((data) => {
         setTodos(data);
-        console.log(data)
+        console.log("THIS IS THE TODOS: ")
+        console.log(data);
       })
       .catch((err) => alert(err));
   };
 
   const getUserName = () => {
-    api 
+    api
       .get("./api/username/")
       .then((res) => res.data)
       .then((data) => {
-        setUsername(data)
-        console.log(data)
+        setUsername(data);
+        console.log(data);
       })
       .catch((err) => alert(err));
   };
@@ -50,7 +61,7 @@ function Home({user="User"}) {
     <div className="main-container">
       <h1>Welcome {username}</h1>
       <main>
-        <LeftSideBar getTodos={getTodos} todos={todos}/>
+        <LeftSideBar getTodos={getTodos} todos={todos} />
         <Week />
         <RightSideBar getTodos={getTodos} />
       </main>

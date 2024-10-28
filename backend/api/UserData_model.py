@@ -48,34 +48,37 @@ class UserData:
 
     def add_todo(self, todo: Todo) -> bool:
         # if it already exists in our dictionary, means that we are trying to add an existing element
-        if todo.item_id in self.__todos:
-            return False
+        if todo.date not in self.__todos:
+            self.__todos[todo.date] = {}
 
-        # We will be insert to the database here if its newData
-
-        self.__todos[todo.item_id] = todo
+        self.__todos[todo.date][todo.item_id] = todo
         return True
+    
 
-    def getTodos(self) -> dict:
-        todos = [todo.to_dict() for todo in self.__todos.values()]
+    def getTodos(self, date) -> dict:
+        if date not in self.__todos:
+            return []
+        todos = [todo.to_dict() for todo in self.__todos[date].values()]
         return todos
 
-    def getTodo(self, item_id) -> Todo:
-        return self.__todos[item_id]
+    def getTodo(self, item_id, date) -> Todo:
+        return self.__todos[date][item_id]
 
     def delete_todo(self, item_id) -> bool:
-        if item_id not in self.__todos:
-            return False
+        for date in self.__todos:
+            if item_id in self.__todos[date]:
+                del self.__todos[date][item_id]
+                return True
+            
+        return False
 
-        del self.__todos[item_id]
-
-        return True
 
     def update_todo(self, item_id, isCompleted=None, content=None) -> None:
-        if item_id not in self.__todos:
-            return False
-
-        self.__todos[item_id].update(isCompleted=isCompleted, content=content)
+        for date in self.__todos:
+            if item_id in self.__todos[date]:
+                self.__todos[date][item_id].update(isCompleted=isCompleted, content=content)
+                return True
+        return False
 
     """
         ALL FREQUENT TASK METHODS

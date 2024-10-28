@@ -23,11 +23,11 @@ export function TodosBox({ getTodos, todos }) {
     getTodos();
   };
 
-  const editTodo = async (item_id, item_type, newData = "edited") => {
+  const editTodo = async (item_id, item_type, newData = {
+    content: "testing",
+  }) => {
     try {
-      const response = await api.put(`api/todos/edit/${item_id}/${item_type}`, {
-        newData,
-      });
+      const response = await api.put(`api/todos/edit/${item_id}/${item_type}`, newData);
 
       if (response.status === 204) {
         console.log("Todo was edited successfully");

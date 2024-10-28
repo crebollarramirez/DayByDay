@@ -24,6 +24,7 @@ class ScheduleManager:
                 # Getting the data from database DYNAMODB
                 user_id, item_type = item.get("user#item_type").split("#")
                 user_id = str(user_id)
+                date = item.get("date")
 
                 _, item_id = item.get("user#item_id").split("#")
                 content = item.get("content")
@@ -34,32 +35,29 @@ class ScheduleManager:
 
                 # Now setting the data to the correct user and correct type of data
                 if item_type == "TODO":
-                    todo = Todo(item_id, content, isCompleted)
+                    todo = Todo(item_id, content, isCompleted, date)
                     cls.__users[user_id].add_todo(todo)
 
-                elif item_type == "FREQUENT":
-                    title = item.get("title")
-                    timeFrame = item.get("timeFrame")
-                    frequency = item.get("frequency")
-                    endFrequency = item.get("endFrequency")
-                    freqTask = FrequentTask(
-                        item_id,
-                        title,
-                        content,
-                        frequency,
-                        isCompleted,
-                        timeFrame,
-                        endFrequency,
-                    )
-                    cls.__users[user_id].add_frequentTask(freqTask)
+                # elif item_type == "FREQUENT":
+                #     title = item.get("title")
+                #     timeFrame = item.get("timeFrame")
+                #     frequency = item.get("frequency")
+                #     endFrequency = item.get("endFrequency")
+                #     freqTask = FrequentTask(
+                #         item_id,
+                #         title,
+                #         content,
+                #         frequency,
+                #         isCompleted,
+                #         timeFrame,
+                #         endFrequency,
+                #     )
+                #     cls.__users[user_id].add_frequentTask(freqTask)
 
                 elif item_type == "TASK":
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
-                    date = item.get("date")
 
-
-                    
                     task = Task(item_id, title, content, isCompleted, timeFrame, date)
                     cls.__users[user_id].add_task(task, True)
 
@@ -118,14 +116,14 @@ class ScheduleManager:
         pass
 
     @classmethod
-    def getTodos(cls, request) -> dict:
+    def getTodos(cls, request, date) -> dict:
         if request.method == "GET":
             user_id = str(request.user)
 
             if user_id not in cls.__users:
                 cls.__users[user_id] = UserData(user_id)
 
-            return cls.__users[user_id].getTodos()
+            return cls.__users[user_id].getTodos(date)
 
     def getGoals(cls, request) -> None:
         if request.method == "GET":
@@ -139,25 +137,25 @@ class ScheduleManager:
             cls.__users[user_id] = UserData(user_id)
 
         data = request.data
-        # print(request.data)
 
         # ALL ITEMS HAVE THESE ATTRIBUTES
         item_type = data.get("item_type")
         content = data.get("content")
         completed = data.get("completed")
+        date = data.get("date")
         item_id = str(uuid.uuid4())
 
         if item_type == "TODO":
             cls.__users[user_id].add_todo(
-                Todo(item_id=item_id, content=content, completed=completed)
+                Todo(item_id=item_id, date=date, content=content, completed=completed)
             )
-
             cls.__table.put_item(
                 Item={
                     "user#item_type": "#".join([user_id, item_type]),
                     "user#item_id": "#".join([user_id, item_id]),
                     "content": content,
                     "completed": completed,
+                    "date": date,
                 }
             )
         elif item_type == "TASK":
@@ -165,10 +163,7 @@ class ScheduleManager:
             content = data.get("content")
             completed = data.get("completed")
             timeFrame = data.get("timeFrame")
-            date = data.get("date")
 
-            print('THIS IS TIMEFRAME')
-            print(timeFrame)
 
             task = Task(
                 item_id=item_id,
@@ -229,7 +224,7 @@ class ScheduleManager:
         user_id = str(request.user)
         if request.method == "DELETE":
             if item_type == "TODO":
-                cls.__users[user_id].delete_todo(item_id)
+                cls.__users[user_id].delete_todo(item_id) 
 
                 response = cls.__table.delete_item(
                     Key={
@@ -270,6 +265,8 @@ class ScheduleManager:
             data = json.loads(request.body)
             content = data.get("content")
             completed = data.get("completed")
+            date = data.get("completed")
+
             if item_type == "TODO":
                 cls.__users[user_id].update_todo(item_id, isCompleted=completed, content=content)
 
@@ -294,7 +291,6 @@ class ScheduleManager:
             elif item_type == "TASK":
                 title = data.get("title")
                 timeFrame = data.get("timeFrame")
-                date = data.get("date")
 
                 cls.__users[user_id].update_task(
                     item_id,
