@@ -2,7 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-// import "../styles/Form.css";
+import "../styles/formStyle.css";
 import LoadingIndictor from "./LoadingIndicator";
 
 function Form({ route, method }) {
@@ -36,22 +36,35 @@ function Form({ route, method }) {
   return (
     <form onSubmit={handleSubmit} className="form-container">
       <h1>{name}</h1>
-      <input
-        className="form-input"
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-      />
-      <input
-        className="form-input"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      {loading && <LoadingIndictor/>}
-      <button className="form-button" type="submit">
+      <div className="fields-container">
+        <div className="form__group field">
+          <input
+            className="form__field"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+          />
+          <label htmlFor="content" className="form__label">
+            Username
+          </label>
+        </div>
+        <div className="form__group field">
+          <input
+            className="form__field"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+          />
+          <label htmlFor="content" className="form__label">
+            Password
+          </label>
+        </div>
+      </div>
+
+      {loading && <LoadingIndictor />}
+      <button className="submit-button" type="submit">
         {name}
       </button>
     </form>

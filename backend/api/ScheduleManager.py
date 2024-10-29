@@ -38,22 +38,6 @@ class ScheduleManager:
                     todo = Todo(item_id, content, isCompleted, date)
                     cls.__users[user_id].add_todo(todo)
 
-                # elif item_type == "FREQUENT":
-                #     title = item.get("title")
-                #     timeFrame = item.get("timeFrame")
-                #     frequency = item.get("frequency")
-                #     endFrequency = item.get("endFrequency")
-                #     freqTask = FrequentTask(
-                #         item_id,
-                #         title,
-                #         content,
-                #         frequency,
-                #         isCompleted,
-                #         timeFrame,
-                #         endFrequency,
-                #     )
-                #     cls.__users[user_id].add_frequentTask(freqTask)
-
                 elif item_type == "TASK":
                     title = item.get("title")
                     timeFrame = item.get("timeFrame")
@@ -188,35 +172,6 @@ class ScheduleManager:
                 )
             else:
                 return Response({"message": "Task was not created"}, status=400)
-
-        # elif item_type == "FREQUENT":
-        #     title = data.get("title")
-        #     content = data.get("content")
-        #     frequency = list(data.get("frequency"))
-        #     completed = data.get("completed")
-        #     timeFrame = data.get("timeFrame")
-        #     endFrequency = data.get("endFrequency")
-
-        #     freqTask = FrequentTask(
-        #         item_id, title, content, frequency, completed, timeFrame, endFrequency
-        #     )
-
-        #     if cls.__users[user_id].add_frequentTask(freqTask):
-        #         response = cls.__table.put_item(
-        #             Item={
-        #                 "user#item_type": "#".join([user_id, item_type]),
-        #                 "user#item_id": "#".join([user_id, item_id]),
-        #                 "content": content,
-        #                 "completed": completed,
-        #                 "timeFrame": timeFrame,
-        #                 "title": title,
-        #                 "endFrequency": endFrequency,
-        #                 "frequency": frequency,
-        #             }
-        #         )
-        #     else:
-        #         return Response({"message": "Task was not created"}, status=400)
-
         return Response({"message": "Task Created", "data": data}, status=201)
 
     @classmethod
