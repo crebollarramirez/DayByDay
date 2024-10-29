@@ -1,47 +1,66 @@
 # api/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .Todo_Model import Todo
-from .ScheduleManager import ScheduleManager
 import os
 
 # Load OpenAI API key from environment variables
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 
+"""
+    OPENAI Reponses Structure
+    {
+    "role": "system",
+    "content": "You are a schedule manager. You will process user input 
+    and organize the data in JSON format based on the user's requests. 
+    A task can only have the following attributes: 'title', 'content', 
+    'timeFrame' (formatted as HH:MM, HH:MM), 'date' 
+    (formatted as MM-DD-YYYY), and 'item_type' set to 'TASK'. 
+    A Todo can only have the following attributes: 'title', 
+    'content', and 'item_type' set to 'TODO'. If user input 
+    involves generating multiple tasks or todos, format the 
+    JSON response as a list. You will generate tasks or todos for 
+    the user. Consider the following tasks to avoid overlapping with 
+    user-provided tasks: [{\"title\": \"Day 1 - Go to party\", \"content\":
+        \"Party with Angel\", \"timeFrame\": \"[16:00, 16:30]\", \"date\": 
+        \"10-21-2024\"}]"
+    }
+"""
+
 class ChatBotConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        await self.accept()
+        user = self.scope['user']
         
-        # Send an initial welcome message from the bot
-        welcome_message = "Welcome to the chat! How can I assist you today?"
-        await self.send(text_data=json.dumps({
-            'message': welcome_message
-        }))
+        if user.is_authenticated:
+            await self.accept()
+            # Send an initial welcome message from the bot
+            welcome_message = f"Welcome to the chat {str(user)}! How can I assist you today?"
+            await self.send(text_data=json.dumps({
+                'message': welcome_message
+            }))
+        else:
+            # Reject the connection if the user is not authenticated
+            await self.close()
 
     async def disconnect(self, close_code):
         pass
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
         user = self.scope['user']
-        print('THIS IS THE USER: ' + str(user.username))
+        
+        if not user.is_authenticated:
+            await self.send(text_data=json.dumps({
+                'message': "You must be logged in to use this feature."
+            }))
+            return
 
+        data = json.loads(text_data)
         user_message = data['message']
 
         # Send the user message to OpenAI API
-        
         messageToUser, toCreate, toDelete, toEdit = await self.get_bot_response(user_message)
-        if len(toCreate) != 0:
-            # for item in toCreate:
-            #     if ScheduleManager.time_frame_overlap()
-            pass
-                
-        elif len(toDelete) != 0:
-            pass
-        elif len(toEdit) != 0:
-            pass
 
-        
+        # Additional logic for handling tasks
+        # ...
 
         # Send the bot response back to the WebSocket
         await self.send(text_data=json.dumps({

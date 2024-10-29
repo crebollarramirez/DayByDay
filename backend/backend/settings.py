@@ -128,6 +128,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# This will only be used to handle users so we can authenticate.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

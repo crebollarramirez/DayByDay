@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from .ScheduleManager import ScheduleManager
+from .services.ScheduleManager import ScheduleManager
 from .Dynamo import DynamoDB_Manager
 import os
 

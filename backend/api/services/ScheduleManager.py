@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 import json
 from django.conf import settings
-from .models import FrequentTask, Goal
-from .UserData_model import UserData
-from .Todo_Model import Todo
-from .Task_Model import Task
+from ..models.models import FrequentTask, Goal
+from ..models.UserData_model import UserData
+from ..models.Todo_Model import Todo
+from ..models.Task_Model import Task
 from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Key, Attr
 import uuid

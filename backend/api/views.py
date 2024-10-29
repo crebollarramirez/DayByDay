@@ -2,11 +2,10 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .ScheduleManager import ScheduleManager
+from .services.ScheduleManager import ScheduleManager
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
-from .services import AIBot
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -110,32 +109,3 @@ class TodayList(APIView):
 
         response = ScheduleManager.getToday(request, kwargs["todayDate"])
         return Response(response)
-
-
-class ChatAI(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs) -> Response:
-        # Create a message (you can customize this as needed)
-        message = "This is your message set from box example."
-
-        # Return a successful response with the message
-        return Response(
-            {"message": message}, 
-            status=status.HTTP_200_OK
-        )
-
-    def post(self, request, *args, **kwargs) -> Response:
-        print("this is the message received")
-        user_message = request.data.get("message")
-
-        AIBot.handleUserMessage(request, user_message)
-
-        # Generate a reply (you can customize this logic)
-        bot_reply = "this is the bot reply!"
-
-        # Return the bot's reply in the response
-        return Response(
-            {"reply": bot_reply}, 
-            status=status.HTTP_200_OK
-        )
