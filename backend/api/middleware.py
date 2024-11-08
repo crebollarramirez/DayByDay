@@ -46,4 +46,3 @@ class TokenAuthMiddlewareInstance:
         self.scope["user"] = await get_user(self.scope)
         # Call the inner application with the updated scope
         await self.inner(self.scope, receive, send)  # No need to return anything
-

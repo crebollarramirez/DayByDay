@@ -1,29 +1,29 @@
 from .Todo_Model import Todo
 from .Task_Model import Task
 from .models import FrequentTask
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class UserData:
     def __init__(self, user_id) -> None:
+        """
+        User ID
+        """
         self.__user_id = user_id
 
         """
-        key: title of todo
-        value: object todo
-        """
-
-        self.__todos = {}
-
-        """
-        key: frequency
-        value: dictionary that holds all tasks in that frequency {
-            key: title
-            value: frequent task object
+        key: date (str)
+        value: dictionary {
+            key: item_id (str)
+            value: Todo object
         }
-        
         """
+        self.__todos: dict[str, dict[str, Todo]] = {}
 
-        self.__frequentTasks = {
+        """
+        key: frequency (str)
+        value: dictionary that holds all tasks in that frequency (dict[str, FrequentTask])
+        """
+        self.__frequentTasks: dict[str, dict[str, FrequentTask]] = {
             "MONDAY": {},
             "TUESDAY": {},
             "WEDNESDAY": {},
@@ -36,11 +36,16 @@ class UserData:
             "MONTHLY": {},
             "YEARLY": {},
         }
-        # self.__allFrequentTasks = {}
 
-        self.__tasks: dict[str, Task] = {
+        """
+        key: date (str)
+        value: dictionary {
+            key: item_id (str)
+            value: Task object
         }
-        # self.__allTasks = {}
+        """
+        self.__tasks: dict[str, dict[str, Task]] = {
+        }
 
     """
         ALL TODOS METHODS
@@ -55,11 +60,14 @@ class UserData:
         return True
     
 
-    def getTodos(self, date) -> dict:
+    def get_todos(self, date) -> dict:
         if date not in self.__todos:
             return []
         todos = [todo.to_dict() for todo in self.__todos[date].values()]
         return todos
+    
+    def getAllTodos(self) -> dict:
+        return [todo.to_dict() for todos in self.__todos.values() for todo in todos.values()]
 
     def getTodo(self, item_id, date) -> Todo:
         return self.__todos[date][item_id]
@@ -132,6 +140,7 @@ class UserData:
     """
 
     def add_task(self, task: Task, fromDB=False) -> bool:
+        print("WE ARE ADDING A TASK")
         if task.date in self.__tasks and task.item_id in self.__tasks[task.date]:
             return False
 
@@ -153,11 +162,25 @@ class UserData:
     def delete_task(self, item_id) -> bool:
         for dic in self.__tasks.values():
             if item_id in dic:
-                if dic[item_id].parent is not None:
-                    pass # handle what happens to parent             
+                # if dic[item_id].parent is not None:
+                #     pass # handle what happens to parent             
                 del dic[item_id]
         return True
-
+    
+    """
+    Updates a task with the given item_id.
+    
+    Args:
+        item_id (str): The item_id of the task to be updated.
+        isCompleted (bool, optional): Whether the task is completed. Defaults to None.
+        title (str, optional): The title of the task. Defaults to None.
+        content (str, optional): The content of the task. Defaults to None.
+        timeFrame (list, optional): The time frame of the task. Defaults to None.
+        date (str, optional): The date of the task. Defaults to None.
+    
+    Returns:
+        bool: True if the task was found and updated, False otherwise.
+    """
     def update_task(
         self,
         item_id,
@@ -190,16 +213,32 @@ class UserData:
 
     def get_user_id(self) -> str:
         return self.__user_id
+    
+    """
+    Gets a week of tasks for the user given a date.
 
-    def checkIfDuplicate(self, newTask, d) -> bool:
-        for task in self.__tasks[d].values():
-            if task.parent is not None and newTask.parent == task.parent:
-                return True
-        return False
-
+    :param date: Date string in MM-DD-YYYY format.
+    :return: A dictionary where the keys are day names and the values are dictionaries of tasks.
+    """
     def getWeek(self, date) -> dict:
         week = {}
+        START_DAY = datetime.strptime(date, "%m-%d-%Y").date()
+
+        for i in range(0, 5):
+            dayName = str((START_DAY + timedelta(days=i)).strftime("%A"))
+            fullDay = (
+                dayName + ", " + str((START_DAY + timedelta(days=i)).strftime("%B %d"))
+            )  # full Day name for the day
+            d = str((START_DAY + timedelta(days=i)).strftime("%m-%d-%Y"))
+
+            if dayName not in week:
+                week[fullDay] = {}
+
+            userTasks = self.get_tasks()
+            if d in userTasks:
+                week[fullDay] = userTasks[d]
         return week
+
 
     def getToday(self, date) -> dict:
         today = {}
@@ -213,5 +252,10 @@ class UserData:
                 today[title] = task.toDict()
 
         return today
+    
+
+    def getAllData(self) -> tuple[list[Todo], dict[str, dict[str, Task]]]:
+        return self.getAllTodos(), self.get_tasks()
+    
 
 

@@ -39,7 +39,26 @@ class TodosList(APIView):
         return Response(ScheduleManager.getTodos(self.request, kwargs["date"]))
 
     def post(self, request, *args, **kwargs) -> Response:
-        return ScheduleManager.create(request)
+        data = request.data
+
+        # All items have this information 
+        item_type = data.get("item_type")
+        content = data.get("content")
+        completed = data.get("completed")
+        date = data.get("date")
+        title = data.get("title")
+        timeFrame = data.get("timeFrame")
+        user_id = str(self.request.user)
+
+        return ScheduleManager.create(
+            user_id=user_id, 
+            item_type=item_type,
+            content=content, 
+            completed=completed,
+            date=date, 
+            title=title,
+            timeFrame=timeFrame
+        )
 
     def delete(self, request, *args, **kwargs) -> Response:
         user = str(self.request.user)
@@ -88,7 +107,27 @@ class TaskList(APIView):
         return Response(ScheduleManager.getTasks(self.request))
 
     def post(self, request, *args, **kwargs) -> Response:
-        return ScheduleManager.create(self.request)
+        data = request.data
+
+        # All items have this information 
+        item_type = data.get("item_type")
+        content = data.get("content")
+        completed = data.get("completed")
+        date = data.get("date")
+        title = data.get("title")
+        timeFrame = data.get("timeFrame")
+        user_id = str(self.request.user)
+        
+        return ScheduleManager.create(
+            user_id=user_id, 
+            item_type=item_type,
+            content=content, 
+            completed=completed,
+            date=date, 
+            title=title,
+            timeFrame=timeFrame
+        )
+
 
     def put(self, request, *args, **kwargs) -> Response:
         return ScheduleManager.update(

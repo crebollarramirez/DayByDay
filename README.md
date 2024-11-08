@@ -24,9 +24,21 @@ that I wanted to find a way to make it easier to organize big plans that I wante
 ## Bult With
 
 React.js
-MongoDB
+DynamoDB
 Django
 
 ## Developer Notes
 
 The app features an AI-powered scheduling assistant, which uses OpenAI's API for natural language processing. You can talk to the agent to create tasks, which will be written to the database. The agent can also read from the database to suggest a better schedule for the week, adapting to your goals and tasks.
+
+## How to start up the app
+
+### Start Frontend React.js
+```
+npm run dev
+```
+
+### Start Backend Server
+```
+python3 manage.py runserver
+```
