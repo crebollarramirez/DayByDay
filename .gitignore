@@ -4,3 +4,4 @@ backend/.env
 backend/Dockerfile
 frontend/Dockerfile
 docker-compose.yml
+backend/openAITest.txt

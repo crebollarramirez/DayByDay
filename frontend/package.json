@@ -7,10 +7,16 @@
     "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@syncfusion/ej2-base": "^27.1.54",
     "@syncfusion/ej2-buttons": "^27.1.53",
     "@syncfusion/ej2-calendars": "^27.1.52",
@@ -24,6 +30,7 @@
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
+    "react-big-calendar": "^1.17.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
   },
@@ -31,10 +38,13 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
     "vite": "^5.3.4"
   },
   "proxy": "http://localhost:5000"

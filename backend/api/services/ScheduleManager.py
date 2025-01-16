@@ -196,7 +196,8 @@ class ScheduleManager:
                 date=date,
             )
 
-            if cls.time_frame_overlap(user_id, task, date):
+            print("THIS IS THE timeframe", date)
+            if cls.time_frame_overlap(user_id, task):
                 return Response({"message": "Task was not created"}, status=400)
 
             if cls.__users[user_id].add_task(task):
@@ -398,45 +399,6 @@ class ScheduleManager:
                     status=204,
                 )
 
-    """
-    Check if two tasks overlap based on their time frames.
-
-    :param task: timeFrame in format ["HH:MM", "HH:MM"], date in format MM-DD-YYYY
-    :return: a Task if there was an overlap, else None
-    """
-
-    @classmethod
-    def time_frame_overlap(cls, user_id: str, task: Task, date: str) -> tuple | None:
-        # Convert military time to minutes since midnight for comparison
-        def military_to_minutes(military_time):
-            hours, minutes = map(int, military_time.split(":"))
-            return hours * 60 + minutes
-
-        user = cls.__users.get(user_id)
-
-        # If the user or the task date doesn't exist, return None
-        if not user or date not in user.get_tasks():
-            return None
-
-        # Iterate through existing tasks on the same date
-        overlap_tasks = []
-        for event in user.get_tasks()[date].values():
-            start1, end1 = task.timeFrame
-            start2, end2 = event["timeFrame"]
-
-            # Convert timeframes to minutes for comparison
-            start1_minutes = military_to_minutes(start1)
-            end1_minutes = military_to_minutes(end1)
-            start2_minutes = military_to_minutes(start2)
-            end2_minutes = military_to_minutes(end2)
-
-            # Check if the timeframes overlap
-            if not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes):
-                overlap_tasks.append(event)  # Add the task that overlaps to the list
-
-        # Return the list of tasks that overlap, or None if no overlap is found
-        return tuple(overlap_tasks) if overlap_tasks else None
-    
     @classmethod
     def get_user(cls, user_id: str) -> UserData:
         return cls.__users.get(user_id)

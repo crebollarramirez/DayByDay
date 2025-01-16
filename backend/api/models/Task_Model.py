@@ -70,7 +70,7 @@ class Task:
             "timeFrame": self.timeFrame,
             "date": self.date,
             "item_id": self.item_id,
-            "parent": self.parent
+            # "parent": self.parent
         }
 
     """

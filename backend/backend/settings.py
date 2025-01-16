@@ -15,6 +15,8 @@ from datetime import timedelta
 from dotenv import load_dotenv 
 import boto3
 import os
+from openai import OpenAI
+import openai
 
 load_dotenv()
 
@@ -43,6 +45,11 @@ TABLE = boto3.resource(
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
             endpoint_url=ENDPOINT_URL,  # For local DynamoDB instance
         ).Table(AWS_DYNAMODB_TABLE_NAME)
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+
+OPENAI_CLIENT = OpenAI()
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

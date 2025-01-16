@@ -257,5 +257,42 @@ class UserData:
     def getAllData(self) -> tuple[list[Todo], dict[str, dict[str, Task]]]:
         return self.getAllTodos(), self.get_tasks()
     
+    """
+    Checks if a given timeframe overlaps with any existing tasks on the same date.
 
+    Args:
+        date (str): The date of the task to be added.
+        timeFrame (list): A list containing the start and end times of the task in military time format.
 
+    Returns:
+        dict[dict] | None: A list of tasks that overlap with the given timeframe, or None if no overlap is found.
+        Where each task has attributes such as title, content, completion status, time frame, date, and item_id.
+    """
+    def overlaps(self, date:str, timeFrame: list) -> dict[dict] | None:
+        # Convert military time to minutes since midnight for comparison
+        def military_to_minutes(military_time):
+            hours, minutes = map(int, military_time.split(":"))
+            return hours * 60 + minutes
+
+        # If the user or the task date doesn't exist, return None
+        if date not in self.get_tasks():
+            return None
+
+        # Iterate through existing tasks on the same date
+        overlap_tasks = []
+        for event in self.get_tasks()[date].values():
+            start1, end1 = timeFrame
+            start2, end2 = event["timeFrame"]
+
+            # Convert timeframes to minutes for comparison
+            start1_minutes = military_to_minutes(start1)
+            end1_minutes = military_to_minutes(end1)
+            start2_minutes = military_to_minutes(start2)
+            end2_minutes = military_to_minutes(end2)
+
+            # Check if the timeframes overlap
+            if not (end1_minutes <= start2_minutes or end2_minutes <= start1_minutes):
+                overlap_tasks.append(event.toDict())  # Add the task that overlaps to the list
+
+        # Return the list of tasks that overlap, or None if no overlap is found
+        return tuple(overlap_tasks) if overlap_tasks else None
