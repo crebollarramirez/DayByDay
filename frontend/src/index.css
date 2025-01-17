@@ -1,7 +1,8 @@
 html, body {
     margin: 0;
     padding: 0;
-}
+    background-color: #12343b;
+  }
 
 html {
   box-sizing: border-box;
