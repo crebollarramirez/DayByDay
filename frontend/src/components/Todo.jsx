@@ -15,9 +15,37 @@ export function Todo({ todo }) {
         console.error("Failed to edit the todo");
       }
     } catch (error) {
-      console.error("Failed to set todo status", error);
+      console.log("Failed to set todo status", error);
     }
-    // getTodos();
+  };
+
+  const onDelete = async () => {
+    console.log("Deleting todo: ", todo);
+    try{
+      const response = await api.delete(`api/todos/delete/${todo.item_id}/${todo.item_type}`);
+      if(response.status === 204){
+        console.log("Todo was deleted successfully");
+      }else{
+        console.error("Failed to delete the todo");
+      }
+
+    }catch(error){
+      console.log("Failed to delete the todo", error);
+    }
+  };
+
+  const onEdit = async (content) => {
+    console.log("Editing todo: ", todo);
+    try {
+      const response = await api.put(`api/todos/edit/${todo.item_id}/${todo.item_type}`, { content: content });
+      if (response.status === 204) {
+        console.log("Todo was edited successfully");
+      } else {
+        console.error("Failed to edit the todo");
+      }
+    } catch (error) {
+      console.log("Failed to edit the todo", error);
+    }
   };
 
   return (

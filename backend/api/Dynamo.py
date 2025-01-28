@@ -74,11 +74,11 @@ class DynamoDB_Manager:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "user#item_type", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "user#item_id", "KeyType": "RANGE"},  # Sort key
+                    {"AttributeName": "item_id", "KeyType": "RANGE"},  # Sort key
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "user#item_type", "AttributeType": "S"},  # String type
-                    {"AttributeName": "user#item_id", "AttributeType": "S"},  # String type
+                    {"AttributeName": "item_id", "AttributeType": "S"},  # String type
                 ],
                 ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
             )

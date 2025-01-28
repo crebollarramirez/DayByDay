@@ -37,48 +37,29 @@ export function CreateMenu({ getTodos }) {
     let item = {};
     var item_type = "TODO";
 
-    // Prioritize "FREQUENT" if frequency is selected
 
     if (title === "") {
       item_type = "TODO";
-    } else {
-      // Only set to "TASK" if frequency is empty and scheduledDay is provided
-      console.log("This is also running");
-      item_type = "TASK";
-    }
+    } 
 
     if (item_type === "TODO") {
       item = {
         content: content,
         item_type: item_type,
-        completed: false,
         date: formatDate(scheduledDay),
-      };
-    } else if (item_type === "FREQUENT") {
-      item = {
-        title: title,
-        content: content,
-        item_type: item_type,
-        completed: false,
-        frequency: frequency, // Make sure frequency is included
-        timeFrame: timeFrame,
-        endFrequency: endDay,
       };
     } else if (item_type === "TASK") {
       item = {
         title: title,
         content: content,
         item_type: item_type,
-        completed: false,
         timeFrame: timeFrame,
         date: formatDate(scheduledDay),
       };
     }
 
-    // Log the item for debugging
     console.log(item);
-    // setFrequency([]);
-    // setScheduledDay("");
+    setScheduledDay("");
 
     api
       .post("/api/tasks/", item)
@@ -122,7 +103,7 @@ export function CreateMenu({ getTodos }) {
           <div className="space-y-4">
             <div>
               <textarea
-                className="w-full p-3 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
+                className="w-full p-3 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite resize-none"
                 id="content"
                 name="content"
                 required
@@ -240,7 +221,7 @@ export function CreateMenu({ getTodos }) {
 
             {scheduledDay === "" && (
               <div className="space-y-4">
-                <div>
+                {/* <div>
                   <label
                     htmlFor="frequency"
                     className="block text-nightBlue font-semibold mb-2"
@@ -268,9 +249,9 @@ export function CreateMenu({ getTodos }) {
                     <option value="Monthly">Monthly</option>
                     <option value="Yearly">Yearly</option>
                   </select>
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <label
                     htmlFor="endDay"
                     className="block text-nightBlue font-semibold mb-2"
@@ -286,7 +267,7 @@ export function CreateMenu({ getTodos }) {
                     required
                     className="w-full p-2 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
                   />
-                </div>
+                </div> */}
               </div>
             )}
           </div>
