@@ -1,7 +1,10 @@
 import React from "react";
 import api from "../api";
+import { useAppContext } from "../context/AppProvider";
 
 export function Todo({ todo }) {
+  const { setSelectedTodo } = useAppContext();
+
   const setStatus = async (todo) => {
     try {
       const response = await api.put(
@@ -65,16 +68,11 @@ export function Todo({ todo }) {
       </div>
 
       <div className="w-full flex justify-end items-center">
-        <div className="w-1/2 flex flex-row gap-1">
+        <div className="w-1/4 flex flex-row gap-1">
+
           <button
             className="text-sandTan hover:text-nightBlue border border-sandTan hover:bg-sandTan focus:outline-none py-1 w-full rounded-lg transition duration-300 ease-in-out"
-            onClick={() => onDelete(todo.item_id, todo.item_type)}
-          >
-            Delete
-          </button>
-          <button
-            className="text-sandTan hover:text-nightBlue border border-sandTan hover:bg-sandTan focus:outline-none py-1 w-full rounded-lg transition duration-300 ease-in-out"
-            onClick={() => onEdit(todo.item_id, todo.item_type)}
+            onClick={() => setSelectedTodo(todo)}
           >
             Edit
           </button>

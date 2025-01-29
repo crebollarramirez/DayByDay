@@ -4,9 +4,10 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedTodo, setSelectedTodo] = useState(null);
 
   return (
-    <AppContext.Provider value={{ selectedTask, setSelectedTask }}>
+    <AppContext.Provider value={{ selectedTask, setSelectedTask, selectedTodo, setSelectedTodo }}>
       {children}
     </AppContext.Provider>
   );

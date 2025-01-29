@@ -5,52 +5,52 @@ import { Todo } from "./Todo";
 export function TodosBox() {
   const todos = [
     {
-      id: 1,
+      item_id: 1,
       content: "Milk, Bread, Eggs, Butter",
       completed: false,
     },
     {
-      id: 2,
+      item_id: 2,
       content: "30 minutes of cardio",
       completed: false,
     },
     {
-      id: 3,
+      item_id: 3,
       content: "Read 'Atomic Habits'",
       completed: false,
     },
     {
-      id: 4,
+      item_id: 4,
       content: "Vacuum and dust living room",
       completed: false,
     },
     {
-      id: 5,
+      item_id: 5,
       content: "Complete the frontend for the new app",
       completed: false,
     },
     {
-      id: 6,
+      item_id: 6,
       content: "Check in with mom and see how she's doing",
       completed: false,
     },
     {
-      id: 7,
+      item_id: 7,
       content: "Research destinations and book flights",
       completed: false,
     },
     {
-      id: 8,
+      item_id: 8,
       content: "Buy ingredients for dinner",
       completed: false,
     },
     {
-      id: 9,
+      item_id: 9,
       content: "Pay electricity and water bills",
       completed: false,
     },
     {
-      id: 10,
+      item_id: 10,
       content:
         "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur adipisci officiis officia nemo quasi corporis perferendis voluptate tempora quo eaque!",
       completed: false,

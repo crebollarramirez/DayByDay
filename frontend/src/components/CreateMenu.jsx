@@ -6,7 +6,6 @@ export function CreateMenu({ getTodos }) {
   const [content, setContent] = useState("");
   const [itemType, setItemType] = useState("TODO");
   const [scheduledDay, setScheduledDay] = useState("");
-  const [endDay, setEndDay] = useState("");
   const [frequency, setFrequency] = useState([]);
   const [timeFrame, setTimeFrame] = useState(["", ""]);
 
@@ -23,36 +22,22 @@ export function CreateMenu({ getTodos }) {
     return `${month}-${day}-${year}`;
   };
 
-  const handleFrequencyChange = (e) => {
-    const selectedOptions = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    );
-    setFrequency(selectedOptions); // Set the selected options as an array
-  };
-
   const onSubmit = (e) => {
     e.preventDefault();
 
-    let item = {};
-    var item_type = "TODO";
+    var item = {};
 
-
-    if (title === "") {
-      item_type = "TODO";
-    } 
-
-    if (item_type === "TODO") {
+    if (itemType === "TODO") {
       item = {
         content: content,
-        item_type: item_type,
+        item_type: "TODO",
         date: formatDate(scheduledDay),
       };
-    } else if (item_type === "TASK") {
+    } else if (itemType === "TASK") {
       item = {
         title: title,
         content: content,
-        item_type: item_type,
+        item_type: "TASK",
         timeFrame: timeFrame,
         date: formatDate(scheduledDay),
       };
@@ -160,31 +145,29 @@ export function CreateMenu({ getTodos }) {
               ></textarea>
             </div>
 
-            {frequency.length === 0 && (
-              <div>
-                <label
-                  htmlFor="scheduledDay"
-                  className="block text-dustyWhite font-semibold mb-2"
-                >
-                  Scheduled Day
-                </label>
-                <input
-                  className="w-full p-2 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
-                  type="date"
-                  id="scheduledDay"
-                  name="scheduledDay"
-                  value={scheduledDay}
-                  onChange={(e) => setScheduledDay(e.target.value)}
-                  required
-                />
-              </div>
-            )}
+            <div>
+              <label
+                htmlFor="scheduledDay"
+                className="block text-dustyWhite font-semibold mb-2"
+              >
+                Scheduled Day
+              </label>
+              <input
+                className="w-full p-2 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
+                type="date"
+                id="scheduledDay"
+                name="scheduledDay"
+                value={scheduledDay}
+                onChange={(e) => setScheduledDay(e.target.value)}
+                required
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="timeFrom"
-                  className="block text-nightBlue font-semibold mb-2"
+                  className="block text-dustyWhite font-semibold mb-2"
                 >
                   From:
                 </label>
@@ -203,7 +186,7 @@ export function CreateMenu({ getTodos }) {
               <div>
                 <label
                   htmlFor="timeTo"
-                  className="block text-nightBlue font-semibold mb-2"
+                  className="block text-dustyWhite font-semibold mb-2"
                 >
                   To:
                 </label>
@@ -218,58 +201,6 @@ export function CreateMenu({ getTodos }) {
                 />
               </div>
             </div>
-
-            {scheduledDay === "" && (
-              <div className="space-y-4">
-                {/* <div>
-                  <label
-                    htmlFor="frequency"
-                    className="block text-nightBlue font-semibold mb-2"
-                  >
-                    Frequency
-                  </label>
-                  <select
-                    name="frequency"
-                    id="frequency"
-                    value={frequency}
-                    onChange={handleFrequencyChange}
-                    multiple
-                    required
-                    className="w-full p-2 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
-                  >
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                    <option value="Everyday">Everyday</option>
-                    <option value="Biweekly">Biweekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Yearly">Yearly</option>
-                  </select>
-                </div> */}
-
-                {/* <div>
-                  <label
-                    htmlFor="endDay"
-                    className="block text-nightBlue font-semibold mb-2"
-                  >
-                    Frequency End
-                  </label>
-                  <input
-                    type="date"
-                    id="endDay"
-                    name="endDay"
-                    value={endDay}
-                    onChange={(e) => setEndDay(e.target.value)}
-                    required
-                    className="w-full p-2 border border-sandTan rounded-md focus:outline-none focus:ring-2 focus:ring-nightBlue bg-dustyWhite"
-                  />
-                </div> */}
-              </div>
-            )}
           </div>
         )}
 

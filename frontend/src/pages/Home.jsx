@@ -8,11 +8,12 @@ import QuoteOfTheDay from "../components/QuoteOfTheDay";
 import { TodosBox } from "../components/TodosBox";
 import { CreateMenu } from "../components/CreateMenu";
 import { AIChat } from "../components/AIChat";
-import { Task } from "../components/Task";
+import { SelectedItem } from "../components/SelectedItem";
 import { useAppContext } from "../context/AppProvider";
 
 function Home() {
   const { selectedTask, setSelectedTask } = useAppContext();
+  const { selectedTodo, setSelectedTodo } = useAppContext();
   const [todos, setTodos] = useState([]);
   const [isCreateMenuVisible, setIsCreateMenuVisible] = useState(false);
   const [username, setUsername] = useState("User");
@@ -61,7 +62,12 @@ function Home() {
   function renderEventContent(eventInfo) {
     return (
       <div className="flex items-center gap-1 w-full border h-full text-nightBlueShadow flex-ro">
-        <input type="checkbox" className="" />
+        <input
+          type="checkbox"
+          className=""
+          checked={eventInfo.event.extendedProps.isCompleted}
+          readOnly
+        />
         <b className="sm:text-xs">{eventInfo.timeText}</b>
         <i className="sm:text-xs">{eventInfo.event.title}</i>
       </div>
@@ -79,6 +85,7 @@ function Home() {
       timeFrame: clickInfo.event.extendedProps.timeFrame,
       item_id: clickInfo.event.extendedProps.item_id,
       date: clickInfo.event.extendedProps.date,
+      isCompleted: clickInfo.event.extendedProps.isCompleted,
     });
   };
 
@@ -88,8 +95,8 @@ function Home() {
   }, []);
 
   return (
-    <div className="h-full w-full lg:grid lg:grid-cols-6 lg:gap-0 lg:grid-rows-6 lg:gap-x-2 p-4 md:flex md:flex-col md:gap-4 md:h-screen">
-      <div className="col-start-2 col-end-5 row-start-1 row-end-6 h-full w-full flex flex-col items-center justify-center gap-4 md:order-2">
+    <div className="h-full w-full lg:grid lg:grid-cols-6 lg:gap-0 lg:grid-rows-6 lg:gap-x-2 p-4 md:flex md:flex-col md:gap-4 md:h-screen sm:flex sm:flex-col sm:gap-3">
+      <div className="col-start-2 col-end-5 row-start-1 row-end-6 h-full w-full flex flex-col items-center justify-center gap-4 md:order-2 sm:order-2">
         <h1 className="text-4xl text-dustyWhite">Welcome {username}!</h1>
         <div className="w-full rounded-lg p-4 bg-gradient-to-b from-sandTan to-sanTanShadow">
           <FullCalendar
@@ -108,18 +115,22 @@ function Home() {
           />
         </div>
       </div>
-      <div className="col-start-5 col-end-7 row-span-full h-full w-full flex flex-col items-center justify-center rounded-lg md:order-4 md:gap-3">
+      <div className="col-start-5 col-end-7 row-span-full h-full w-full flex flex-col items-center justify-center rounded-lg md:order-4 sm:order-4 md:gap-3">
         <CreateMenu />
         <AIChat />
       </div>
-      <div className="col-start-1 col-end-2 row-span-full h-full w-full flex flex-col items-center justify-center bg-gradient-to-b from-sandTan to-sanTanShadow rounded-lg md:order-3">
+      <div className="col-start-1 col-end-2 row-span-full h-full w-full flex flex-col items-center justify-center bg-gradient-to-b from-sandTan to-sanTanShadow rounded-lg md:order-3 sm:order-3">
         <TodosBox />
       </div>
-      <div className="col-start-2 col-end-5 row-span-6 h-full w-full flex flex-col items-center justify-center bg-gradient-to-b from-sandTan to-sanTanShadow rounded-lg md:order-1">
+      <div className="col-start-2 col-end-5 row-span-6 h-full w-full flex flex-col items-center justify-center bg-gradient-to-b from-sandTan to-sanTanShadow rounded-lg md:order-1 sm:order-1">
         <QuoteOfTheDay />
       </div>
-
-      {selectedTask && <Task task={selectedTask} />}
+      {selectedTask && (
+        <SelectedItem task={selectedTask} setSelectedItem={setSelectedTask} />
+      )}
+      {selectedTodo && (
+        <SelectedItem task={selectedTodo} setSelectedItem={setSelectedTodo} />
+      )}
     </div>
   );
 }
