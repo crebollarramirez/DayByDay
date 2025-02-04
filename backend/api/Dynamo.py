@@ -141,31 +141,23 @@ class DynamoDB_Manager:
             print(f'Error creating table: {e.response["Error"]["Message"]}')
 
     @classmethod
-    def get_all_items(cls) -> tuple[dict, int]:
+    def get_all_items(cls) -> list:
         """
-        Retrieves all items from the DynamoDB table, grouped by date and sorted by content.
-        
+        Retrieves all items from the DynamoDB table, sorted by content.
+
         Returns:
-            tuple: A dictionary where keys are dates and values are lists of items (sorted by content),
-               and the total number of items.
+            list: A list of items sorted by content.
         """
-        items = {}
-        total_items = 0
+        items = []
 
         # Scan the table to get all items
         scan_response = cls.__DYNAMODB.Table(cls.__AWS_DYNAMODB_TABLE_NAME).scan()
-        for item in scan_response.get("Items", []):
-            date = item.get("date")
-            if date not in items:
-                items[date] = []
-            items[date].append(item)
-            total_items += 1
+        items.extend(scan_response.get("Items", []))
 
         # Sort the items by content
-        for date in items:
-            items[date].sort(key=lambda x: x.get("content", ""))
+        items.sort(key=lambda x: x.get("content", ""))
 
-        return items, total_items
+        return items
 
     @classmethod
     def scan_table(cls) -> list:

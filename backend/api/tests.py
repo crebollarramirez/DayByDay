@@ -10,11 +10,13 @@ import csv
 import os
 import json
 
+
 class AuthenticationTestCase(TestCase):
     """
-    Test case for user authentication processes including registration, 
+    Test case for user authentication processes including registration,
     token generation, and access to authenticated endpoints.
     """
+
     def setUp(self) -> None:
         """
         Set up the test environment.
@@ -79,7 +81,6 @@ class AuthenticationTestCase(TestCase):
         # Check that the response contains an access token
         self.assertIn("access", response.data)
 
-
     def test_authenticated_access(self) -> None:
         """
         Test access to a protected API endpoint using a valid token.
@@ -94,6 +95,7 @@ class AuthenticationTestCase(TestCase):
 
 class TodosTests(APITestCase):
     """
+    Test case for CRUD operations on todos using the DynamoDB backend.
     Sets up the test environment by creating a test user and obtaining a JWT token.
     The token is included in the Authorization header for authenticated API requests.
     """
@@ -131,23 +133,19 @@ class TodosTests(APITestCase):
 
         currentDir = os.path.dirname(os.path.abspath(__file__))
         parentDir = os.path.dirname(currentDir)
-        self.expected_todos = {}
-        self.expected_todos_count = 0  # Initialize the counter
+        self.expected_todos = []
+        self.dates = []
 
         with open(parentDir + "/test_data/todos_test_data.csv", mode="r") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 # Convert the completed field to a boolean
                 row["completed"] = row["completed"] == "True"
-                date = row["date"]
-                if date not in self.expected_todos:
-                    self.expected_todos[date] = []
-                self.expected_todos[date].append(row)
-                self.expected_todos_count += 1  # Increment the counter
+                self.expected_todos.append(row)
+                if row["date"] not in self.dates:
+                    self.dates.append(row["date"])
 
-        # Sorting the todos by content
-        for date in self.expected_todos.keys():
-            self.expected_todos[date].sort(key=lambda d: d["content"])
+        self.expected_todos.sort(key=lambda x: x.get("content", ""))
 
         # Adding dummy data to database
         DynamoDB_Manager.addDummyData()
@@ -165,12 +163,17 @@ class TodosTests(APITestCase):
         """
 
         actual = {}
-        for date in self.expected_todos.keys():
+
+        for date in self.dates:
             url = reverse("todos") + f"?date={date}"
             actual[date] = self.client.get(url).data
+            actual[date].sort(key=lambda d: d["content"])  # Sort by 'content'
 
-        for date in self.expected_todos.keys():
-            self.assertEqual(len(actual[date]), len(self.expected_todos[date]))
+        for date in self.dates:
+            self.assertEqual(
+                len(actual[date]),
+                len([x for x in self.expected_todos if x["date"] == date]),
+            )
 
     def test_02_get_todos_of_date(self) -> None:
         """
@@ -184,15 +187,14 @@ class TodosTests(APITestCase):
 
         The test ensures that the todos returned by the API for a specific date match the expected todos in the test data.
         """
-        for date in self.expected_todos.keys():
+        for date in self.dates:
             url = reverse("todos") + f"?date={date}"
-
-            actual = sorted(
-                self.client.get(url).data, key=lambda d: d["content"]
-            )  # Sort by 'content'
+            actual = self.client.get(url).data
+            actual.sort(key=lambda d: d["content"])  # Sort by 'content'
+            expected = [x for x in self.expected_todos if x["date"] == date]
 
             # Checking if we got the right todos for the date given
-            for expected, actual in zip(actual, self.expected_todos[date]):
+            for expected, actual in zip(actual, expected):
                 self.assertEqual(str(expected["content"]), str(actual["content"]))
                 self.assertEqual(str(expected["completed"]), str(actual["completed"]))
                 self.assertEqual(str(expected["item_id"]), str(actual["item_id"]))
@@ -215,6 +217,14 @@ class TodosTests(APITestCase):
         self.assertEqual(actual, [])
 
     def test_04_create_todo_adds_one(self) -> None:
+        """
+        Test creating a single todo item via the API.
+
+        This test verifies that:
+        1. A todo item can be created successfully via a POST request.
+        2. The response status code is 201 CREATED.
+        3. The total number of items in the database increases by one.
+        """
         url = reverse("todos")
         expected = {
             "content": "This is a test",
@@ -226,8 +236,10 @@ class TodosTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Checking if adding one todo adds one to the database (size wise)
-        self.assertEqual(self.expected_todos_count + 1, DynamoDB_Manager.get_all_items()[1])
-    
+        self.assertEqual(
+            len(self.expected_todos) + 1, len(DynamoDB_Manager.get_all_items())
+        )
+
     def test_05_create_todos(self) -> None:
         """
         Test the creation of todo items via the API.
@@ -244,7 +256,7 @@ class TodosTests(APITestCase):
             {
                 "content": "This is a test",
                 "date": "2024-10-28",
-            }, 
+            },
             {
                 "content": "This is a test2",
                 "date": "2023-11-28",
@@ -260,20 +272,17 @@ class TodosTests(APITestCase):
             # Checking if the response is correct
             response = self.client.post(url, data=item)
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-            if item["date"] not in self.expected_todos:
-                self.expected_todos[item["date"]] = []
-            self.expected_todos[item["date"]].append(item)
+            self.expected_todos.append(item)
+            self.expected_todos.sort(key=lambda x: x.get("content", ""))
 
-        allDBItems, dbSize  = DynamoDB_Manager.get_all_items()
-
-        self.assertEqual(dbSize, self.expected_todos_count + len(tasksToCreate))
-        for key in self.expected_todos.keys():
-            for ex, ac in zip(self.expected_todos[key], allDBItems[key]):
-                self.assertEqual(str(ex["content"]), str(ac["content"]))
-                self.assertFalse(str(ac["completed"]) == True)
-                self.assertTrue(ac["item_id"] is not None)
-                self.assertEqual("TODO", str(ac["item_type"]))
-                self.assertEqual(str(ex["date"]), str(ac["date"]))
+        allDBItems = DynamoDB_Manager.get_all_items()
+        self.assertEqual(len(allDBItems), len(self.expected_todos))
+        for ex, ac in zip(self.expected_todos, allDBItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
 
     def test_06_create_todo_with_missing_fields(self) -> None:
         """
@@ -323,18 +332,18 @@ class TodosTests(APITestCase):
         The test ensures that duplicate todo items can be successfully created and retrieved from the API, and that they have unique 'item_id' fields.
         """
         url = reverse("todos")
-        
+
         expected = {
             "content": "This is a test",
             "date": "2024-10-28",
         }
 
         # Adding the expected todo twice the expected todos
-        self.expected_todos["2024-10-28"].append(expected)
-        self.expected_todos["2024-10-28"].append(expected)
+        self.expected_todos.append(expected)
+        self.expected_todos.append(expected)
 
         # Sorting the expected todos by content
-        self.expected_todos["2024-10-28"].sort(key=lambda d: d["content"])
+        self.expected_todos.sort(key=lambda d: d["content"])
 
         # Checking if the response is correct when creating two of the same todos
         response = self.client.post(url, data=expected)
@@ -343,19 +352,280 @@ class TodosTests(APITestCase):
         response = self.client.post(url, data=expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        actualItems, actualSize = DynamoDB_Manager.get_all_items()
+        actualItems = DynamoDB_Manager.get_all_items()
 
         # Checking if the size is correct
-        self.assertEqual(actualSize, self.expected_todos_count + 2)
+        self.assertEqual(len(actualItems), len(self.expected_todos))
 
-        for date in self.expected_todos.keys():
-            for ex, ac in zip(self.expected_todos[date], actualItems[date]):
-                self.assertEqual(str(ex["content"]), str(ac["content"]))
-                self.assertFalse(str(ac["completed"]) == True)
-                self.assertTrue(ac["item_id"] is not None)
-                self.assertEqual("TODO", str(ac["item_type"]))
-                self.assertEqual(str(ex["date"]), str(ac["date"]))
-        
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
+
+    def test_08_delete_only_todo_in_date(self) -> None:
+        """
+        Test case for deleting the only todo item on a specific date.
+
+        This test verifies that deleting the only todo item on a specific date
+        correctly removes the item from the expected todos and the database.
+
+        Steps:
+        1. Set the ITEM_ID of the todo to be deleted.
+        2. Construct the URL for the delete request.
+        3. Remove the item from the expected todos dictionary.
+        4. Send a DELETE request to the server.
+        5. Verify the response status code is 200 OK.
+        6. Retrieve all items from the database.
+        7. Verify the size of the database has decreased by one.
+        8. Verify the remaining items in the database match the expected todos.
+
+        Asserts:
+        - The response status code is 200 OK.
+        - The size of the database is reduced by one.
+        - The remaining items in the database match the expected todos.
+        """
+        ITEM_ID = "3"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        # Checking if the response is correct
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Deleting the item from the expected todos
+        for ex in self.expected_todos:
+            if ex["item_id"] == ITEM_ID:
+                self.expected_todos.remove(ex)
+                break
+
+        actualItems = DynamoDB_Manager.get_all_items()
+
+        # Checking if deleting one todo removes one from the database (size wise)
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ex["completed"]) == True, str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
+
+    # Trying to delete an item that does not exist or "wrong id"
+
+    def test_09_delete_non_existent_todo(self) -> None:
+        """
+        Test case for attempting to delete a non-existent todo item.
+
+        This test verifies that attempting to delete a todo item that does not exist
+        results in the appropriate error response from the server.
+
+        Steps:
+        1. Set the ITEM_ID of the non-existent todo to be deleted.
+        2. Construct the URL for the delete request.
+        3. Send a DELETE request to the server.
+        4. Verify the response status code is 400 BAD REQUEST.
+
+        Asserts:
+        - The response status code is 400 BAD REQUEST.
+        """
+        ITEM_ID = "696969"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        # Checking if the response is correct
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # Deleting multiple items
+    def test_10_delete_multiple_todos(self) -> None:
+        """
+        Test case for deleting multiple todo items.
+
+        This test verifies that deleting multiple todo items correctly removes the items
+        from the expected todos and the database.
+
+        Steps:
+        1. Set the ITEM_IDS of the todos to be deleted.
+        2. Iterate through the expected todos and remove the items with matching ITEM_IDS.
+        3. Remove any dates that have an empty list of todos.
+        4. Send a DELETE request to the server for each ITEM_ID.
+        5. Verify the response status code is 200 OK for each request.
+        6. Retrieve all items from the database.
+        7. Verify the size of the database has decreased by the number of deleted items.
+        8. Verify the remaining items in the database match the expected todos.
+
+        Asserts:
+        - The response status code is 200 OK for each DELETE request.
+        - The size of the database is reduced by the number of deleted items.
+        - The remaining items in the database match the expected todos.
+        """
+        ITEM_IDS = ("1", "8", "3")
+
+        # Removing the items from the expected todos
+        for item_id in ITEM_IDS:
+            for item in self.expected_todos:
+                if item["item_id"] == item_id:
+                    self.expected_todos.remove(item)
+                    break
+
+        # Deleting the items
+        for item_id in ITEM_IDS:
+            url = reverse("todos") + f"?item_id={item_id}"
+
+            # Checking if the response is correct
+            response = self.client.delete(url)
+            actualItems = DynamoDB_Manager.get_all_items()
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Checking if deleting one todo removes one from the database (size wise)
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+
+        # Checking if the items are deleted and other items are not
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
+
+    # Deleting an item then deleting it again
+    def test_11_delete_todo_twice(self) -> None:
+        """
+        Test case for deleting a todo item twice.
+
+        This test verifies that deleting a todo item twice results in the appropriate
+        responses from the server.
+
+        Steps:
+        1. Set the ITEM_ID of the todo to be deleted.
+        2. Construct the URL for the delete request.
+        3. Send a DELETE request to the server.
+        4. Verify the response status code is 200 OK.
+        5. Send a DELETE request to the server again for the same ITEM_ID.
+        6. Verify the response status code is 400 BAD REQUEST.
+        7. Verifies if the size of the database remains unchanged after the second delete request.
+
+        Asserts:
+        - The response status code is 200 OK for the first DELETE request.
+        - The response status code is 400 BAD REQUEST for the second DELETE request.
+        """
+        ITEM_ID = "10"
+
+        # Removing the item from the expected todos
+        for item in self.expected_todos:
+            if item["item_id"] == ITEM_ID:
+                self.expected_todos.remove(item)
+                break
+
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        # Checking if the response is correct
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Checking if the response is correct
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Checking if the size was not changed
+        actualItems = DynamoDB_Manager.get_all_items()
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+
+    def test_12_delete_todos_multiple_in_dates(self) -> None:
+        """
+        Test case for deleting multiple todo items on the same date.
+
+        This test verifies that deleting multiple todo items on the same date
+        correctly removes the items from the expected todos and the database.
+
+        Steps:
+        1. Set the ITEM_IDS of the todos to be deleted.
+        2. Iterate through the expected todos and remove the items with matching ITEM_IDS.
+        3. Send a DELETE request to the server for each ITEM_ID.
+        4. Verify the response status code is 200 OK for each request.
+        5. Retrieve all items from the database.
+        6. Verify the size of the database has decreased by the number of deleted items.
+        7. Verify the remaining items in the database match the expected todos.
+
+        Asserts:
+        - The response status code is 200 OK for each DELETE request.
+        - The size of the database is reduced by the number of deleted items.
+        - The remaining items in the database match the expected todos.
+        """
+        ITEM_IDS = ("11", "6")
+
+        for item_id in ITEM_IDS:
+            for ex in self.expected_todos:
+                if ex["item_id"] == item_id:
+                    self.expected_todos.remove(ex)
+                    break
+
+        for item_id in ITEM_IDS:
+            url = reverse("todos") + f"?item_id={item_id}"
+
+            # Checking if the response is correct
+            response = self.client.delete(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Checking if deleting one todo removes one from the database (size wise)
+        actualItems = DynamoDB_Manager.get_all_items()
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
+
+    def test_13_delete_todos_multiple_in_different_dates(self) -> None:
+        """
+        Test case for deleting multiple todo items on different dates.
+
+        This test verifies that deleting multiple todo items on different dates
+        correctly removes the items from the expected todos and the database.
+
+        Steps:
+        1. Set the ITEM_IDS of the todos to be deleted.
+        2. Iterate through the expected todos and remove the items with matching ITEM_IDS.
+        3. Send a DELETE request to the server for each ITEM_ID.
+        4. Verify the response status code is 200 OK for each request.
+        5. Retrieve all items from the database.
+        6. Verify the size of the database has decreased by the number of deleted items.
+        7. Verify the remaining items in the database match the expected todos.
+
+        Asserts:
+        - The response status code is 200 OK for each DELETE request.
+        - The size of the database is reduced by the number of deleted items.
+        - The remaining items in the database match the expected todos.
+        """
+        ITEM_IDS = ("10", "11", "5", "2", "6", "12")
+        for item_id in ITEM_IDS:
+            for ex in self.expected_todos:
+                if ex["item_id"] == item_id:
+                    self.expected_todos.remove(ex)
+                    break
+
+        for item_id in ITEM_IDS:
+            url = reverse("todos") + f"?item_id={item_id}"
+            # Checking if the response is correct
+            response = self.client.delete(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Checking if deleting one todo removes one from the database (size wise)
+        actualItems = DynamoDB_Manager.get_all_items()
+
+        # Checking if the size is correct after deleting multiple items
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+
+        # Now checking if all other items were not altered.
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["date"]), str(ac["date"]))
+
     @classmethod
     def tearDownClass(cls) -> None:
         """

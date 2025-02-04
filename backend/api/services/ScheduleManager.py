@@ -34,18 +34,20 @@ class ScheduleManager:
         try:
             response = cls.__table.query(
                 IndexName="ItemTypeIndex",
-                KeyConditionExpression=Key('user_id').eq(user_id) & Key('item_type').eq('TODO')
+                KeyConditionExpression=Key("user_id").eq(user_id)
+                & Key("item_type").eq("TODO"),
             )
 
-        # Filter the todos by date
+            # Filter the todos by date
 
-            todos = [todo for todo in response.get("Items", []) if todo.get("date") == date]
+            todos = [
+                todo for todo in response.get("Items", []) if todo.get("date") == date
+            ]
 
         except Exception as e:
             print(f"Error with fetching calendar data: {e}")
-        
-        return todos
 
+        return todos
 
     @classmethod
     def create_todo(cls, user_id, todoInfo) -> Response:
@@ -63,7 +65,7 @@ class ScheduleManager:
                 - 201 Created: If the TODO item was successfully created.
                 - 400 Bad Request: If there was an error creating the TODO item.
         """
-        
+
         # Creating a uuid for the item
         item_id = str(uuid.uuid4())
 
@@ -77,8 +79,21 @@ class ScheduleManager:
                     "content": todoInfo["content"],
                     "date": todoInfo["date"],
                 }
-            )     
+            )
         except Exception as e:
             return Response({"message": "Todo was not created"}, status=400)
-        
+
         return Response({"message": "Todo Created"}, status=201)
+
+    @classmethod
+    def deleteTodo(cls, user_id, item_id) -> Response:
+        try:
+            cls.__table.delete_item(
+                Key={"user_id": user_id, "item_id": item_id},
+                ConditionExpression="attribute_exists(item_id)",
+            )
+
+        except Exception as e:
+            return Response({"message": "Todo was not deleted"}, status=400)
+
+        return Response({"message": "Todo Deleted"}, status=200)

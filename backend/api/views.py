@@ -98,3 +98,19 @@ class Todos(APIView):
             return Response({"error": "There was an internal error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response(todos, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args, **kwargs) -> Response:
+        """
+        Handles DELETE requests to delete a todo item for a specific user and date.
+        Args:
+            request (Request): The HTTP request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        Returns:
+            Response: A Response object indicating the result of the delete operation.
+        """
+
+        if request.query_params['item_id'] is None:
+            return Response({"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return ScheduleManager.deleteTodo(str(self.request.user), request.query_params['item_id'])
