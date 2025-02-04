@@ -9,11 +9,23 @@ from .serializers import UserSerializer
 
 
 class CreateUserView(generics.CreateAPIView):
+    """
+    API view to create a new user.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        """
+        Handle POST request to create a new user.
+
+        Args:
+            request: The HTTP request object.
+
+        Returns:
+            Response: A response object containing the username of the created user or errors if the request is invalid.
+        """
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # This will create the user
@@ -21,130 +33,68 @@ class CreateUserView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserInfo(APIView):
+    """
+    API view to retrieve information about the authenticated user.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs) -> Response:
+        """
+        Handle GET request to retrieve user information.
+
+        Args:
+            request: The HTTP request object.
+
+        Returns:
+            Response: A response object containing the username of the authenticated user.
+        """
         return Response(str(self.request.user))
     
-
-
-class TodosList(APIView):
+class Todos(APIView):
+    """
+    API view to handle todo items.
+    """
     permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST request to create a new todo item.
+
+        Args:
+            request (Request): The HTTP request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: A Response object with the result of the operation.
+
+        Raises:
+            HTTP_400_BAD_REQUEST: If the 'content' or 'date' fields are missing in the request data.
+        """
+        data = self.request.data
+
+        if data.get("content") is None or data.get("date") is None:
+            return Response({"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return ScheduleManager.create_todo(str(self.request.user), data)
+    
 
     def get(self, request, *args, **kwargs) -> Response:
-        # Retrieve the authenticated user
-        user = self.request.user
+        """
+        Handles GET requests to retrieve todos for a specific user and date.
+        Args:
+            request (Request): The HTTP request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        Returns:
+            Response: A Response object containing the todos for the specified user and date,
+                      or an error message if an exception occurs.
+        """
 
-        # Assuming get_user_schedule is a method in your ScheduleManager
-        return Response(ScheduleManager.getTodos(self.request, kwargs["date"]))
-
-    def post(self, request, *args, **kwargs) -> Response:
-        data = request.data
-
-        # All items have this information 
-        item_type = data.get("item_type")
-        content = data.get("content")
-        completed = data.get("completed")
-        date = data.get("date")
-        title = data.get("title")
-        timeFrame = data.get("timeFrame")
-        user_id = str(self.request.user)
-
-        return ScheduleManager.create(
-            user_id=user_id, 
-            item_type=item_type,
-            content=content, 
-            completed=completed,
-            date=date, 
-            title=title,
-            timeFrame=timeFrame
-        )
-
-    def delete(self, request, *args, **kwargs) -> Response:
-        user = str(self.request.user)
-
-        response = ScheduleManager.delete(
-            request, kwargs["item_id"], kwargs["item_type"]
-        )
-        return response
-
-    def put(self, request, *args, **kwargs) -> Response:
-        user = str(self.request.user)
-
-        response = ScheduleManager.update(
-            request, kwargs["item_id"], kwargs["item_type"]
-        )
-        return response
-
-
-class AllStatusChange(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, *args, **kwargs) -> Response:
-        user = str(self.request.user)
-
-        response = ScheduleManager.changeStatus(
-            request, kwargs["item_id"], kwargs["item_type"]
-        )
-        return response
-
-
-class WeekList(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs) -> Response:
-        print(kwargs["date"])
-
-        user = self.request.user
-
-        return Response(ScheduleManager.getWeek(self.request, kwargs["date"]))
-
-
-class TaskList(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs) -> Response:
-        return Response(ScheduleManager.getTasks(self.request))
-
-    def post(self, request, *args, **kwargs) -> Response:
-        data = request.data
-
-        # All items have this information 
-        item_type = data.get("item_type")
-        content = data.get("content")
-        completed = data.get("completed")
-        date = data.get("date")
-        title = data.get("title")
-        timeFrame = data.get("timeFrame")
-        user_id = str(self.request.user)
+        try: 
+            todos = ScheduleManager.getTodos(str(self.request.user), request.query_params['date'])
+        except Exception as e:
+            print("There was an internal error", e)
+            return Response({"error": "There was an internal error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return ScheduleManager.create(
-            user_id=user_id, 
-            item_type=item_type,
-            content=content, 
-            completed=completed,
-            date=date, 
-            title=title,
-            timeFrame=timeFrame
-        )
-
-
-    def put(self, request, *args, **kwargs) -> Response:
-        return ScheduleManager.update(
-            self.request, kwargs["item_id"], kwargs["item_type"]
-        )
-
-    def delete(self, request, *args, **kwargs) -> Response:
-        return ScheduleManager.delete(
-            self.request, kwargs["item_id"], kwargs["item_type"]
-        )
-
-
-class TodayList(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        user = self.request.user
-
-        response = ScheduleManager.getToday(request, kwargs["todayDate"])
-        return Response(response)
+        return Response(todos, status=status.HTTP_200_OK)
