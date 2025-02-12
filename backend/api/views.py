@@ -12,6 +12,7 @@ class CreateUserView(generics.CreateAPIView):
     """
     API view to create a new user.
     """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
@@ -31,11 +32,13 @@ class CreateUserView(generics.CreateAPIView):
             user = serializer.save()  # This will create the user
             return Response({"username": user.username}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class UserInfo(APIView):
     """
     API view to retrieve information about the authenticated user.
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs) -> Response:
@@ -49,11 +52,13 @@ class UserInfo(APIView):
             Response: A response object containing the username of the authenticated user.
         """
         return Response(str(self.request.user))
-    
+
+
 class Todos(APIView):
     """
     API view to handle todo items.
     """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -73,11 +78,12 @@ class Todos(APIView):
         """
         data = self.request.data
 
-        if data.get("content") is None or data.get("date") is None:
-            return Response({"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST)
+        if data.get("content") is None or data.get("item_date") is None:
+            return Response(
+                {"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         return ScheduleManager.create_todo(str(self.request.user), data)
-    
 
     def get(self, request, *args, **kwargs) -> Response:
         """
@@ -91,14 +97,19 @@ class Todos(APIView):
                       or an error message if an exception occurs.
         """
 
-        try: 
-            todos = ScheduleManager.getTodos(str(self.request.user), request.query_params['date'])
+        try:
+            todos = ScheduleManager.getTodos(
+                str(self.request.user), request.query_params["date"]
+            )
         except Exception as e:
             print("There was an internal error", e)
-            return Response({"error": "There was an internal error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            return Response(
+                {"error": "There was an internal error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
         return Response(todos, status=status.HTTP_200_OK)
-    
+
     def delete(self, request, *args, **kwargs) -> Response:
         """
         Handles DELETE requests to delete a todo item for a specific user and date.
@@ -110,7 +121,34 @@ class Todos(APIView):
             Response: A Response object indicating the result of the delete operation.
         """
 
-        if request.query_params['item_id'] is None:
-            return Response({"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST)
+        if request.query_params["item_id"] is None:
+            return Response(
+                {"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        return ScheduleManager.deleteTodo(str(self.request.user), request.query_params['item_id'])
+        return ScheduleManager.deleteTodo(
+            str(self.request.user), request.query_params["item_id"]
+        )
+
+    def put(self, request, *args, **kwargs) -> Response:
+        """
+        Handles PUT requests to update a todo item for a specific user and date.
+        Args:
+            request (Request): The HTTP request object.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        Returns:
+            Response: A Response object indicating the result of the update operation.
+        """
+        if request.query_params["item_id"] is None:
+            return Response(
+                {"error": "Missing Field!"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return ScheduleManager.updateTodo(
+            user_id=str(self.request.user),
+            item_id=request.query_params["item_id"],
+            completed=request.data.get("completed"),
+            content=request.data.get("content"),
+            date=request.data.get("item_date"),
+        )

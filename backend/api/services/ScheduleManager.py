@@ -41,7 +41,7 @@ class ScheduleManager:
             # Filter the todos by date
 
             todos = [
-                todo for todo in response.get("Items", []) if todo.get("date") == date
+                todo for todo in response.get("Items", []) if todo.get("item_date") == date
             ]
 
         except Exception as e:
@@ -77,7 +77,7 @@ class ScheduleManager:
                     "completed": False,
                     "item_type": "TODO",
                     "content": todoInfo["content"],
-                    "date": todoInfo["date"],
+                    "item_date": todoInfo["item_date"],
                 }
             )
         except Exception as e:
@@ -87,6 +87,16 @@ class ScheduleManager:
 
     @classmethod
     def deleteTodo(cls, user_id, item_id) -> Response:
+        """
+        Deletes a todo item from the DynamoDB table.
+
+        Args:
+            user_id (str): The ID of the user.
+            item_id (str): The ID of the item to delete.
+
+        Returns:
+            Response: A response object indicating the result of the delete operation.
+        """
         try:
             cls.__table.delete_item(
                 Key={"user_id": user_id, "item_id": item_id},
@@ -97,3 +107,57 @@ class ScheduleManager:
             return Response({"message": "Todo was not deleted"}, status=400)
 
         return Response({"message": "Todo Deleted"}, status=200)
+
+    @classmethod
+    def updateTodo(
+        cls, user_id, item_id, completed=None, content=None, date=None
+    ) -> Response:
+        """
+        Updates a todo item in the DynamoDB table.
+
+        Args:
+            user_id (str): The ID of the user.
+            item_id (str): The ID of the item to update.
+            completed (str, optional): The completion status of the todo item ("True" or "False").
+            content (str, optional): The content of the todo item.
+            date (str, optional): The date of the todo item.
+
+        Returns:
+            Response: A response object indicating the result of the update operation.
+        """
+        
+        if completed is None and content is None and date is None:
+            return Response({"message": "Nothing to update"}, status=200)
+        
+        if completed is not None and completed not in ["True", "False"]:
+            return Response({"message": "Invalid completed value needs to be True or False"}, status=400)
+
+        try:
+            update_expression = "SET "
+            expression_attribute_values = {}
+
+            if completed is not None:
+                update_expression += "completed = :completed, "
+                expression_attribute_values[":completed"] = (str(completed) == "True")
+
+            if content is not None:
+                update_expression += "content = :content, "
+                expression_attribute_values[":content"] = content
+
+            if date is not None:
+                update_expression += "item_date = :item_date, "
+                expression_attribute_values[":item_date"] = date
+
+            # Remove the trailing comma and space
+            update_expression = update_expression.rstrip(", ")
+            cls.__table.update_item(
+                Key={"user_id": user_id, "item_id": item_id},
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+            )
+
+        except Exception as e:
+            print(e)
+            return Response({"message": "Todo was not updated"}, status=400)
+
+        return Response({"message": "Todo Updated"}, status=200)

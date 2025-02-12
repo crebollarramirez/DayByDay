@@ -5,10 +5,8 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 from .Dynamo import DynamoDB_Manager
-import random
 import csv
 import os
-import json
 
 
 class AuthenticationTestCase(TestCase):
@@ -133,6 +131,7 @@ class TodosTests(APITestCase):
 
         currentDir = os.path.dirname(os.path.abspath(__file__))
         parentDir = os.path.dirname(currentDir)
+
         self.expected_todos = []
         self.dates = []
 
@@ -142,8 +141,8 @@ class TodosTests(APITestCase):
                 # Convert the completed field to a boolean
                 row["completed"] = row["completed"] == "True"
                 self.expected_todos.append(row)
-                if row["date"] not in self.dates:
-                    self.dates.append(row["date"])
+                if row["item_date"] not in self.dates:
+                    self.dates.append(row["item_date"])
 
         self.expected_todos.sort(key=lambda x: x.get("content", ""))
 
@@ -151,7 +150,7 @@ class TodosTests(APITestCase):
         DynamoDB_Manager.addDummyData()
 
     def test_01_length_of_todos(self) -> None:
-        """
+        """z
         Test the length of todos for each date.
 
         This test performs the following tasks:
@@ -172,7 +171,7 @@ class TodosTests(APITestCase):
         for date in self.dates:
             self.assertEqual(
                 len(actual[date]),
-                len([x for x in self.expected_todos if x["date"] == date]),
+                len([x for x in self.expected_todos if x["item_date"] == date]),
             )
 
     def test_02_get_todos_of_date(self) -> None:
@@ -191,7 +190,7 @@ class TodosTests(APITestCase):
             url = reverse("todos") + f"?date={date}"
             actual = self.client.get(url).data
             actual.sort(key=lambda d: d["content"])  # Sort by 'content'
-            expected = [x for x in self.expected_todos if x["date"] == date]
+            expected = [x for x in self.expected_todos if x["item_date"] == date]
 
             # Checking if we got the right todos for the date given
             for expected, actual in zip(actual, expected):
@@ -199,7 +198,7 @@ class TodosTests(APITestCase):
                 self.assertEqual(str(expected["completed"]), str(actual["completed"]))
                 self.assertEqual(str(expected["item_id"]), str(actual["item_id"]))
                 self.assertEqual(str(expected["item_type"]), str(actual["item_type"]))
-                self.assertEqual(str(expected["date"]), str(actual["date"]))
+                self.assertEqual(str(expected["item_date"]), str(actual["item_date"]))
 
     def test_03_get_no_todos_of_date(self) -> None:
         """
@@ -228,7 +227,7 @@ class TodosTests(APITestCase):
         url = reverse("todos")
         expected = {
             "content": "This is a test",
-            "date": "2024-10-28",
+            "item_date": "2024-10-28",
         }
 
         # Checking if the response is correct
@@ -255,15 +254,15 @@ class TodosTests(APITestCase):
         tasksToCreate = [
             {
                 "content": "This is a test",
-                "date": "2024-10-28",
+                "item_date": "2024-10-28",
             },
             {
                 "content": "This is a test2",
-                "date": "2023-11-28",
+                "item_date": "2023-11-28",
             },
             {
                 "content": "This is a test3",
-                "date": "2023-11-28",
+                "item_date": "2023-11-28",
             },
         ]
 
@@ -282,7 +281,7 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     def test_06_create_todo_with_missing_fields(self) -> None:
         """
@@ -303,7 +302,7 @@ class TodosTests(APITestCase):
             "content": "This is a test",
         }
         actual2 = {
-            "date": "2024-10-28",
+            "item_date": "2024-10-28",
         }
         actual3 = {}
 
@@ -335,7 +334,7 @@ class TodosTests(APITestCase):
 
         expected = {
             "content": "This is a test",
-            "date": "2024-10-28",
+            "item_date": "2024-10-28",
         }
 
         # Adding the expected todo twice the expected todos
@@ -362,7 +361,7 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     def test_08_delete_only_todo_in_date(self) -> None:
         """
@@ -409,7 +408,7 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ex["completed"]) == True, str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     # Trying to delete an item that does not exist or "wrong id"
 
@@ -486,7 +485,7 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     # Deleting an item then deleting it again
     def test_11_delete_todo_twice(self) -> None:
@@ -576,7 +575,7 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     def test_13_delete_todos_multiple_in_different_dates(self) -> None:
         """
@@ -624,7 +623,228 @@ class TodosTests(APITestCase):
             self.assertFalse(str(ac["completed"]) == True)
             self.assertTrue(ac["item_id"] is not None)
             self.assertEqual("TODO", str(ac["item_type"]))
-            self.assertEqual(str(ex["date"]), str(ac["date"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
+
+    def test_14_update_todo_none(self) -> None:
+        """
+        Test case for updating a todo item with no changes.
+
+        This test verifies that updating a todo item with no changes
+        correctly returns a 200 OK response and does not alter the database.
+
+        Steps:
+        1. Set the ITEM_ID of the todo to be updated.
+        2. Construct the URL for the update request.
+        3. Send a PUT request to the server with no changes.
+        4. Verify the response status code is 200 OK.
+        5. Retrieve all items from the database.
+        6. Verify the size of the database remains unchanged.
+        7. Verify the remaining items in the database match the expected todos.
+
+        Asserts:
+        - The response status code is 200 OK.
+        - The size of the database remains unchanged.
+        - The remaining items in the database match the expected todos.
+        """
+        ITEM_ID = "1"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        # Checking if the response is correct
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Checking if the size was not changed
+        actualItems = DynamoDB_Manager.get_all_items()
+        self.assertEqual(len(self.expected_todos), len(actualItems))
+        for ex, ac in zip(self.expected_todos, actualItems):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertFalse(str(ac["completed"]) == True)
+            self.assertTrue(ac["item_id"] is not None)
+            self.assertEqual("TODO", str(ac["item_type"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
+
+    def test_15_update_todo_completed(self) -> None: 
+        """
+        Test case for updating the 'completed' status of a todo item.
+
+        This test updates the 'completed' status of a todo item with a specific ITEM_ID
+        and verifies that the update is successful by checking the response status code
+        and comparing the updated 'completed' status with the expected status in the database.
+
+        Steps:
+        1. Define the ITEM_ID and construct the URL for the PUT request.
+        2. Send a PUT request to update the 'completed' status of the todo item.
+        3. Verify that the response status code is HTTP 200 OK.
+        4. Update the expected 'completed' status in the local expected_todos list.
+        5. Retrieve the actual items from the database.
+        6. Compare the expected and actual items to ensure they match.
+
+        Asserts:
+        - The response status code is HTTP 200 OK.
+        - The content, completed status, item_id, item_type, and item_date of each item in the
+        expected_todos list match the corresponding values in the actual items retrieved from the database.
+        """
+        ITEM_ID = "7"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        response = self.client.put(url, data={"completed": True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for item in self.expected_todos:
+            if item["item_id"] == ITEM_ID:
+                item["completed"] = True
+                break
+
+        # Now getting the actual and seeing if it is the same as expected
+        actual = DynamoDB_Manager.get_all_items()
+        for ex, ac in zip(self.expected_todos, actual):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertEqual(ex["completed"], ac["completed"])
+            self.assertEqual(str(ex["item_id"]), str(ac["item_id"]))
+            self.assertEqual(str(ex["item_type"]), str(ac["item_type"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
+
+    def test_16_update_todo_content(self) -> None:
+        """
+        Test case for updating the content of a todo item.
+
+        This test updates the content of a todo item with a specific ITEM_ID
+        and verifies that the update is successful by checking the response
+        status code and comparing the updated content with the expected content
+        in the database.
+
+        Steps:
+        1. Define the ITEM_ID and construct the URL for the PUT request.
+        2. Send a PUT request to update the content of the todo item.
+        3. Verify that the response status code is HTTP 200 OK.
+        4. Update the expected content in the local expected_todos list.
+        5. Sort the expected_todos list by content.
+        6. Retrieve the actual items from the database.
+        7. Compare the expected and actual items to ensure they match.
+
+        Asserts:
+        - The response status code is HTTP 200 OK.
+        - The content, item_id, item_type, and item_date of each item in the
+        expected_todos list match the corresponding values in the actual items
+        retrieved from the database.
+        """
+        ITEM_ID = "2"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        response = self.client.put(url, data={"content": "This is a new content"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for item in self.expected_todos:
+            if item["item_id"] == ITEM_ID:
+                item["content"] = "This is a new content"
+                break
+        
+        # need to resort the expected todos after changing the content
+        self.expected_todos.sort(key=lambda x: x.get("content", ""))
+
+        # Now getting the actual and seeing if it is the same as expected
+        actual = DynamoDB_Manager.get_all_items()
+        for ex, ac in zip(self.expected_todos, actual):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertEqual(str(ex["item_id"]), str(ac["item_id"]))
+            self.assertEqual(str(ex["item_type"]), str(ac["item_type"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
+
+    def test_17_update_todo_date(self) -> None:
+        """
+        Test case for updating the date of a todo item.
+
+        This test updates the date of a specific todo item identified by ITEM_ID.
+        It sends a PUT request to the "todos" endpoint with the new date.
+        The test then verifies that the response status code is HTTP 200 OK.
+        After updating the date, it resorts the expected todos list.
+        Finally, it retrieves all items from DynamoDB and compares each field
+        of the expected todos with the actual items to ensure they match.
+
+        Assertions:
+            - The response status code is HTTP 200 OK.
+            - The content, item_id, item_type, and item_date of each expected todo
+            match the corresponding fields of the actual items retrieved from DynamoDB.
+        """
+        ITEM_ID = "11"
+        url = reverse("todos") + f"?item_id={ITEM_ID}"
+
+        response = self.client.put(url, data={"item_date": "2021-11-28"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        for item in self.expected_todos:
+            if item["item_id"] == ITEM_ID:
+                item["item_date"] = "2021-11-28"
+                break
+
+        # need to resort the expected todos after changing the date
+        self.expected_todos.sort(key=lambda x: x.get("content", ""))
+
+        # Now getting the actual and seeing if it is the same as expected
+        actual = DynamoDB_Manager.get_all_items()
+        for ex, ac in zip(self.expected_todos, actual):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertEqual(str(ex["item_id"]), str(ac["item_id"]))
+            self.assertEqual(str(ex["item_type"]), str(ac["item_type"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
+
+    def test_18_update_multiple_todos(self) -> None:
+        """
+        Test case for updating multiple todo items.
+
+        This test updates multiple todo items identified by ITEM_IDS.
+        It sends multiple PUT requests to the "todos" endpoint with the new data.
+        The test then verifies that the response status code for each request is HTTP 200 OK.
+        After updating the items, it resorts the expected todos list.
+        Finally, it retrieves all items from DynamoDB and compares each field
+        of the expected todos with the actual items to ensure they match.
+
+        Assertions:
+            - The response status code for each PUT request is HTTP 200 OK.
+            - The content, item_id, item_type, and item_date of each expected todo
+            match the corresponding fields of the actual items retrieved from DynamoDB.
+        """
+        ITEM_IDS = ("1", "2", "3", "9")
+
+        for item in self.expected_todos:
+            if str(item["item_id"]) == ITEM_IDS[0]:
+                item["completed"] = True
+                item["content"] = "This is a new edited content"
+                item["item_date"] = "2019-07-05"
+            if item["item_id"] == ITEM_IDS[1]:
+                item["completed"] = True
+            if item["item_id"] == ITEM_IDS[2]:
+                item["content"] = "only edited the content"
+            if item["item_id"] == ITEM_IDS[3]:
+                item["item_date"] = "2025-01-28"
+
+        # Need to sort again
+        self.expected_todos.sort(key=lambda x: x.get("content", ""))
+
+
+        url = reverse("todos") + f"?item_id={ITEM_IDS[0]}"
+        response = self.client.put(url, data={"completed": True, "content": "This is a new edited content", "item_date": "2019-07-05"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        url = reverse("todos") + f"?item_id={ITEM_IDS[1]}"
+        response = self.client.put(url, data={"completed": True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        url = reverse("todos") + f"?item_id={ITEM_IDS[2]}"
+        response = self.client.put(url, data={"content": "only edited the content"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        url = reverse("todos") + f"?item_id={ITEM_IDS[3]}"
+        response = self.client.put(url, data={"item_date": "2025-01-28"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Now getting the actual and seeing if it is the same as expected
+        actual = DynamoDB_Manager.get_all_items()
+        for ex, ac in zip(self.expected_todos, actual):
+            self.assertEqual(str(ex["content"]), str(ac["content"]))
+            self.assertEqual(str(ex["item_id"]), str(ac["item_id"]))
+            self.assertEqual(str(ex["item_type"]), str(ac["item_type"]))
+            self.assertEqual(str(ex["item_date"]), str(ac["item_date"]))
 
     @classmethod
     def tearDownClass(cls) -> None:

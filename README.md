@@ -54,11 +54,10 @@ python3 manage.py runserver
 
 ### Backend Endpoints
 
-- `POST /api/create` - Create a new task or todo.
-- `GET /api/todos/<str:Date>` - Get all todos for the date given. 
-- `GET /api/tasks/<int:Month>` - Get all tasks for that month. 
-- `PUT /api/edit/<str:item_id>` - Update an existing task or todo.
-- `DELETE /api/delete/<str:item_id>` - Delete a task or todo.
+- `POST /api/todos/` - Create a new todo
+- `GET /api/todos/<str:Date>` - Get all todos for that day
+- `PUT /api/todos/<str:item_id>` - Update an existing todo
+- `DELETE /api/todos/<str:item_id>` - Delete an existing todo
 
 
 ### API Request Template
@@ -70,7 +69,7 @@ To ensure smooth communication between the frontend and backend, here is a templ
 **Create a new todo**
 
 ```
-URL: {BASE_URL}/api/create
+URL: {BASE_URL}/api/todos/
 Method: POST
 Headers:
     Content-Type: application/json
@@ -78,7 +77,7 @@ Headers:
 Body:
 {
     "content": "Complete project report", 
-    "date": "MM-DD-YYYY",
+    "date": "YYYY-MM-DD",
     "item_type: "TODO",
 }
 ```
@@ -93,9 +92,9 @@ Headers:
 Body: {}
 ```
 
-**Edit Todo or Task**
+**Edit Todo**
 ```
-URL: {BASE_URL}/api/edit/<str:item_id>
+URL: {BASE_URL}/api/todos/<str:item_id>
 Method: PUT
 Headers:
     Content-Type: application/json
@@ -105,9 +104,9 @@ Body: {
 }
 ```
 
-**Delete Todo or Task**
+**Delete Todo**
 ```
-URL: {BASE_URL}/api/<str:item_id>
+URL: {BASE_URL}/api/todos/<str:item_id>
 Method: DELETE
 Headers:
     Content-Type: application/json
@@ -115,9 +114,9 @@ Headers:
 Body: {}
 ```
 
-**Create a new task**
+<!-- **Create a new task**
 ```
-URL: {BASE_URL}/api/create
+URL: {BASE_URL}/api/tasks
 Method: POST
 Headers:
     Content-Type: application/json
@@ -126,8 +125,7 @@ Body:
 {
     "title": "title of task"
     "content": "content of task",
-    "date": "MM-DD-YYYY",
-    "item_type": "TASK",
+    "date": "YYYY-MM-DD",
     "timeFrame": ['HH:MM', 'HH:MM']
 }
 ```
@@ -140,4 +138,18 @@ Headers:
     Content-Type: application/json
     Authorization: Bearer your_token_here
 Body: {}
+``` -->
+#### Running Backend Tests
+
+To run specific tests for the backend, use the following commands:
+
+**Run Todos Tests**
 ```
+python manage.py test api.tests.TodosTests
+```
+
+**Run Authentication Tests**
+```
+python manage.py test api.tests.AuthenticationTestCase
+```
+

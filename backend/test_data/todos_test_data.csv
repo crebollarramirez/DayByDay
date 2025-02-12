@@ -1,4 +1,4 @@
-user_id,item_id,item_type,content,completed,date
+user_id,item_id,item_type,content,completed,item_date
 chris,1,TODO,Finish the report by EOD.,True,2024-10-22
 chris,2,TODO,Prepare for the meeting.,False,2024-10-23
 chris,3,TODO,Submit the project proposal.,False,2024-10-24
